@@ -766,13 +766,6 @@ body.home-scrolly [data-site-snap] {
   border-radius: 999px;
   background-clip: content-box;
 }
-.monitor-sample-scroll.is-release-tail {
-  overflow-y: hidden;
-  overscroll-behavior-y: none;
-}
-.monitor-sample-scroll.is-release-tail .page {
-  transform: none;
-}
 .monitor-sample-scroll:focus-visible {
   outline: 2px solid rgba(70, 101, 216, .5);
   outline-offset: 6px;

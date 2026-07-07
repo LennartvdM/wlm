@@ -283,6 +283,8 @@
       max: 0,
       raf: 0,
       release: 0,
+      releaseAct: null,
+      releaseAnchor: null,
       releaseRaf: 0,
       tail: 0,
       sync: 0,
@@ -409,17 +411,16 @@
       monitorTicking = false;
       if (!sampleScroll) { return; }
       var max = Math.max(1, samplePager.max || (sampleScroll.scrollHeight - sampleScroll.clientHeight));
-      var pinnedReleaseAnchor = samplePager.anchors.length
-        ? samplePager.anchors[samplePager.anchors.length - 1]
-        : max * .9;
-      if (samplePager.release > 0 && Math.abs(sampleScroll.scrollTop - pinnedReleaseAnchor) > .5) {
-        sampleScroll.scrollTop = pinnedReleaseAnchor;
-      } else if (!samplePager.release && sampleScroll.scrollTop > pinnedReleaseAnchor + 1) {
-        sampleScroll.scrollTop = pinnedReleaseAnchor;
-      }
-      var p = clamp01(sampleScroll.scrollTop / max);
       var releaseP = samplePager.release;
       var isReleaseTail = releaseP > .001;
+      var pinnedReleaseAnchor = releaseAnchor();
+      if (isReleaseTail && Math.abs(sampleScroll.scrollTop - pinnedReleaseAnchor) > .5) {
+        sampleScroll.scrollTop = pinnedReleaseAnchor;
+      } else if (!isReleaseTail && sampleScroll.scrollTop > pinnedReleaseAnchor + 1) {
+        sampleScroll.scrollTop = pinnedReleaseAnchor;
+      }
+      var visualY = isReleaseTail ? pinnedReleaseAnchor : sampleScroll.scrollTop;
+      var p = clamp01(visualY / max);
       sampleScroll.classList.toggle('is-release-tail', isReleaseTail);
       sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
       var frost = smoothstep(.08, .94, releaseP);
@@ -430,14 +431,18 @@
       var best = null;
       var bestDistance = Infinity;
 
-      acts.forEach(function (act) {
-        var rect = act.getBoundingClientRect();
-        var distance = Math.abs(rect.top + rect.height * .5 - center);
-        if (distance < bestDistance) {
-          best = act;
-          bestDistance = distance;
-        }
-      });
+      if (isReleaseTail) {
+        best = samplePager.releaseAct || acts[acts.length - 1] || activeAct;
+      } else {
+        acts.forEach(function (act) {
+          var rect = act.getBoundingClientRect();
+          var distance = Math.abs(rect.top + rect.height * .5 - center);
+          if (distance < bestDistance) {
+            best = act;
+            bestDistance = distance;
+          }
+        });
+      }
 
       activateAct(best || acts[0]);
       monitor.style.setProperty('--frost', frost.toFixed(3));
@@ -447,7 +452,7 @@
       monitor.style.setProperty('--photo-c', photoC.toFixed(3));
       monitor.classList.toggle('is-released', release > .45);
       document.body.classList.toggle('monitor-release-open', release > .04);
-      snapCirkelContent();
+      if (!isReleaseTail) { snapCirkelContent(); }
       schedulePhotoMasks();
     };
 
@@ -457,17 +462,43 @@
       requestAnimationFrame(updateMonitor);
     };
 
-    var releaseAnchor = function () {
-      if (!samplePager.anchors.length) { measureSamplePager(); }
+    var lastSampleAnchor = function () {
+      var max = Math.max(0, sampleScroll.scrollHeight - sampleScroll.clientHeight);
       return samplePager.anchors.length
         ? samplePager.anchors[samplePager.anchors.length - 1]
-        : Math.max(0, sampleScroll.scrollHeight - sampleScroll.clientHeight);
+        : max;
+    };
+
+    var releaseAnchor = function () {
+      if (!samplePager.anchors.length) { measureSamplePager(); }
+      if (samplePager.releaseAnchor != null) { return samplePager.releaseAnchor; }
+      return lastSampleAnchor();
+    };
+
+    var freezeReleaseFrame = function () {
+      if (!sampleScroll) { return; }
+      if (!samplePager.anchors.length) { measureSamplePager(); }
+      samplePager.releaseAnchor = lastSampleAnchor();
+      samplePager.releaseAct = acts[acts.length - 1] || activeAct;
+      sampleScroll.scrollTop = samplePager.releaseAnchor;
+      if (samplePager.releaseAct) {
+        samplePager.index = Math.max(0, acts.indexOf(samplePager.releaseAct));
+        activateAct(samplePager.releaseAct);
+      }
+      snapCirkelContent();
     };
 
     var setReleaseProgress = function (value) {
-      samplePager.release = clamp01(value);
+      var next = clamp01(value);
+      if (next > 0 && samplePager.release <= 0) {
+        freezeReleaseFrame();
+      }
+      samplePager.release = next;
       if (samplePager.release > 0) {
         sampleScroll.scrollTop = releaseAnchor();
+      } else {
+        samplePager.releaseAnchor = null;
+        samplePager.releaseAct = null;
       }
       requestMonitorUpdate();
       schedulePhotoMasks();
@@ -512,6 +543,8 @@
         samplePager.releaseRaf = 0;
       }
       samplePager.release = 0;
+      samplePager.releaseAnchor = null;
+      samplePager.releaseAct = null;
       sampleScroll.classList.remove('is-release-tail');
       sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
     };
@@ -1138,8 +1171,10 @@
       if (!sampleScroll || !acts.length) { return; }
       var wasReleaseTail = sampleScroll.classList.contains('is-release-tail');
       var release = samplePager.release;
+      var releaseAct = samplePager.releaseAct;
       sampleScroll.classList.remove('is-release-tail');
       sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
+      samplePager.releaseAnchor = null;
       var max = Math.max(0, sampleScroll.scrollHeight - sampleScroll.clientHeight);
       samplePager.max = max;
       var line = sampleScroll.clientHeight * .44;
@@ -1150,7 +1185,9 @@
       samplePager.index = nearestSampleAnchor();
       if (wasReleaseTail) {
         samplePager.release = release;
-        sampleScroll.scrollTop = releaseAnchor();
+        samplePager.releaseAnchor = lastSampleAnchor();
+        samplePager.releaseAct = releaseAct || acts[acts.length - 1] || activeAct;
+        sampleScroll.scrollTop = samplePager.releaseAnchor;
         sampleScroll.classList.add('is-release-tail');
         sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
       }
