@@ -20,6 +20,86 @@
     });
   }
 
+  /* Bento-carrousel: elke kaart wisselt willekeurig van omslag.
+     Eén gedeelde pool; geen twee kaarten tonen tegelijk dezelfde omslag,
+     ook niet tijdens een overgang. Echte crossfade: de nieuwe laag staat
+     al volledig dekkend ONDER de oude, die eroverheen uitfadet — de
+     achtergrond schijnt dus nooit door. */
+  var bento = document.querySelector('.bento');
+  var poolEl = document.getElementById('bento-pool');
+  if (bento && poolEl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var pool = JSON.parse(poolEl.textContent);
+    var byId = {};
+    pool.forEach(function (p) { byId[p.id] = p; });
+    var cards = Array.prototype.slice.call(bento.querySelectorAll('.bento-card'));
+
+    /* ids die nu zichtbaar zijn of in een lopende overgang zitten */
+    var inUse = {};
+    cards.forEach(function (c) { inUse[c.dataset.current] = true; });
+
+    /* alles voorladen, zodat een gestagede laag altijd al geladen is */
+    pool.forEach(function (p) { new Image().src = p.src; });
+
+    var setLayer = function (layer, item) {
+      layer.style.background = item.color;
+      layer.querySelector('img').src = item.src;
+    };
+
+    var FADE_MS = 900;
+
+    cards.forEach(function (card, i) {
+      var top = card.querySelector('.layer.top');
+      var bottom = card.querySelector('.layer.bottom');
+      var title = card.querySelector('.card-title');
+
+      var schedule = function (delay) {
+        setTimeout(cycle, delay);
+      };
+
+      var cycle = function () {
+        if (document.hidden || card.matches(':hover') || card.matches(':focus-within')) {
+          schedule(1500 + Math.random() * 1500);
+          return;
+        }
+        var candidates = pool.filter(function (p) { return !inUse[p.id]; });
+        if (!candidates.length) { schedule(2000); return; }
+        var next = candidates[Math.floor(Math.random() * candidates.length)];
+        var oldId = card.dataset.current;
+        inUse[next.id] = true;
+
+        /* stage de nieuwe slide volledig dekkend op de onderste laag */
+        setLayer(bottom, next);
+        var img = bottom.querySelector('img');
+        var ready = img.decode ? img.decode().catch(function () {}) : Promise.resolve();
+        ready.then(function () {
+          card.href = next.href;
+          card.dataset.current = next.id;
+          if (title) { title.textContent = next.title; }
+
+          var finished = false;
+          var finish = function () {
+            if (finished) { return; }
+            finished = true;
+            top.removeEventListener('transitionend', finish);
+            /* zet de bovenste laag terug op de nieuwe slide, zonder animatie */
+            setLayer(top, next);
+            top.classList.add('notransition');
+            top.classList.remove('fading');
+            void top.offsetWidth;
+            top.classList.remove('notransition');
+            delete inUse[oldId];
+            schedule(3800 + Math.random() * 4200);
+          };
+          top.addEventListener('transitionend', finish);
+          setTimeout(finish, FADE_MS + 250);
+          top.classList.add('fading');
+        });
+      };
+
+      schedule(2200 + i * 1300 + Math.random() * 1200);
+    });
+  }
+
   /* Filter op de publicatiepagina */
   var input = document.getElementById('pub-filter');
   if (input) {

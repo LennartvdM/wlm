@@ -327,62 +327,95 @@ section { scroll-margin-top: 4.5rem; }
 
 /* --- themes -------------------------------------------------------------- */
 
-/* --- featured covers: masonry smorgasbord --------------------------------- */
+/* --- full-width bento with carousel cards ---------------------------------
+   Each card holds two stacked layers. The incoming slide is staged on the
+   bottom layer at full opacity; the top layer then fades out over it, so
+   the background never shines through mid-transition. */
 
-.mosaic {
-  columns: 4;
-  column-gap: 1.1rem;
+.bento {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: .9rem;
+  padding-inline: .9rem;
+  height: max(38rem, calc(100vh - 6rem));
 }
+.bento-card:nth-child(1) { grid-column: 1 / 4; grid-row: 1 / 3; }
+.bento-card:nth-child(2) { grid-column: 4 / 6; grid-row: 1 / 2; }
+.bento-card:nth-child(3) { grid-column: 6 / 7; grid-row: 1 / 2; }
+.bento-card:nth-child(4) { grid-column: 4 / 5; grid-row: 2 / 3; }
+.bento-card:nth-child(5) { grid-column: 5 / 7; grid-row: 2 / 3; }
 
-.tile {
+.bento-card {
   position: relative;
   display: block;
-  margin: 0 0 1.4rem;
-  break-inside: avoid;
-  padding: .5rem .5rem .55rem;
-  border-radius: 3px;
-  background: #fff;
-  box-shadow: 0 3px 10px -4px rgba(38, 37, 31, .35);
-  transition: transform .2s ease, box-shadow .2s ease;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px -6px rgba(38, 37, 31, .35);
+  transition: box-shadow .2s ease;
 }
-.tile:nth-child(6n+1) { transform: rotate(-1.4deg); }
-.tile:nth-child(6n+2) { transform: rotate(1.1deg); }
-.tile:nth-child(6n+3) { transform: rotate(.6deg); }
-.tile:nth-child(6n+4) { transform: rotate(-.8deg); }
-.tile:nth-child(6n+5) { transform: rotate(1.6deg); }
-.tile:nth-child(6n)   { transform: rotate(-.5deg); }
-.tile:hover, .tile:focus-visible {
-  transform: rotate(0deg) translateY(-5px) scale(1.02);
-  box-shadow: 0 24px 38px -20px rgba(38, 37, 31, .55);
-  z-index: 1;
+.bento-card:hover, .bento-card:focus-visible {
+  box-shadow: 0 22px 40px -18px rgba(38, 37, 31, .55);
 }
-.tile img { width: 100%; }
-.tile .tile-title {
+
+.bento-card .layer {
   position: absolute;
-  inset: auto .5rem .55rem .5rem;
-  padding: 1.6rem .8rem .65rem;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.bento-card .layer img {
+  max-width: 86%;
+  max-height: 86%;
+  width: auto;
+  height: auto;
+  box-shadow: 0 10px 28px -12px rgba(0, 0, 0, .4);
+  transition: transform .25s ease;
+}
+.bento-card:hover .layer img { transform: scale(1.02); }
+.bento-card .layer.top {
+  z-index: 2;
+  transition: opacity .9s ease;
+}
+.bento-card .layer.top.fading { opacity: 0; }
+.bento-card .layer.top.notransition { transition: none; }
+
+.bento-card .card-title {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 3;
+  padding: 2.2rem 1.1rem .9rem;
   font-family: var(--sans);
-  font-size: .78rem;
+  font-size: .82rem;
   font-weight: 600;
   line-height: 1.35;
   color: #fff;
-  background: linear-gradient(to top, rgba(22, 40, 32, .88), rgba(22, 40, 32, 0));
+  background: linear-gradient(to top, rgba(22, 40, 32, .85), rgba(22, 40, 32, 0));
   opacity: 0;
   transition: opacity .18s ease;
 }
-.tile:hover .tile-title, .tile:focus-visible .tile-title { opacity: 1; }
+.bento-card:hover .card-title, .bento-card:focus-visible .card-title { opacity: 1; }
 
-@media (prefers-reduced-motion: reduce) {
-  .tile, .tile:hover { transform: none; }
+.bento-more { margin: 2rem 0 0; text-align: center; }
+
+@media (max-width: 56rem) {
+  .bento {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: none;
+    grid-auto-rows: 32vh;
+    height: auto;
+  }
+  .bento-card:nth-child(1) { grid-column: 1 / 3; grid-row: auto / span 2; }
+  .bento-card:nth-child(2), .bento-card:nth-child(3),
+  .bento-card:nth-child(4), .bento-card:nth-child(5) { grid-column: auto; grid-row: auto; }
 }
 
-.mosaic-more { margin: 1.9rem 0 0; text-align: center; }
-
-@media (max-width: 68rem) { .mosaic { columns: 3; } }
-@media (max-width: 46rem) { .mosaic { columns: 2; column-gap: .8rem; } .tile { margin-bottom: .8rem; } }
-
 @media (hover: none) {
-  .tile .tile-title { opacity: 1; padding-top: 1.2rem; }
+  .bento-card .card-title { opacity: 1; padding-top: 1.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-card .layer.top { transition: none; }
 }
 
 /* --- about band ------------------------------------------------------------ */
