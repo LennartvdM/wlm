@@ -280,6 +280,7 @@
       anchors: [],
       busy: false,
       index: 0,
+      frostScrollTop: null,
       max: 0,
       raf: 0,
       release: 0,
@@ -405,6 +406,23 @@
       schedulePhotoMasks();
     };
 
+    var clampSampleScrollTop = function (value) {
+      var max = Math.max(0, samplePager.max || (sampleScroll.scrollHeight - sampleScroll.clientHeight));
+      return clampValue(0, value, max);
+    };
+
+    var holdReleaseScrollTop = function () {
+      if (samplePager.frostScrollTop == null) {
+        samplePager.frostScrollTop = sampleScroll.scrollTop;
+      }
+      var held = clampSampleScrollTop(samplePager.frostScrollTop);
+      samplePager.frostScrollTop = held;
+      if (Math.abs(sampleScroll.scrollTop - held) > .5) {
+        sampleScroll.scrollTop = held;
+      }
+      return held;
+    };
+
     var updateMonitor = function () {
       monitorTicking = false;
       if (!sampleScroll) { return; }
@@ -415,7 +433,8 @@
       if (!isReleaseTail && sampleScroll.scrollTop > pinnedReleaseAnchor + 1) {
         sampleScroll.scrollTop = pinnedReleaseAnchor;
       }
-      var p = clamp01(sampleScroll.scrollTop / max);
+      var sampleY = isReleaseTail ? holdReleaseScrollTop() : sampleScroll.scrollTop;
+      var p = clamp01(sampleY / max);
       sampleScroll.classList.toggle('is-release-tail', isReleaseTail);
       sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
       var frost = smoothstep(.08, .94, releaseP);
@@ -468,7 +487,14 @@
     };
 
     var setReleaseProgress = function (value) {
-      samplePager.release = clamp01(value);
+      var release = clamp01(value);
+      if (release > .001 && samplePager.release <= .001) {
+        samplePager.frostScrollTop = sampleScroll.scrollTop;
+      } else if (release <= .001) {
+        samplePager.frostScrollTop = null;
+      }
+      samplePager.release = release;
+      if (release > .001) { holdReleaseScrollTop(); }
       requestMonitorUpdate();
       schedulePhotoMasks();
     };
@@ -512,6 +538,7 @@
         samplePager.releaseRaf = 0;
       }
       samplePager.release = 0;
+      samplePager.frostScrollTop = null;
       sampleScroll.classList.remove('is-release-tail');
       sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
     };
@@ -1138,10 +1165,16 @@
       if (!sampleScroll || !acts.length) { return; }
       var wasReleaseTail = sampleScroll.classList.contains('is-release-tail');
       var release = samplePager.release;
+      var frostScrollTop = samplePager.frostScrollTop;
       sampleScroll.classList.remove('is-release-tail');
       sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
       var max = Math.max(0, sampleScroll.scrollHeight - sampleScroll.clientHeight);
       samplePager.max = max;
+      if (wasReleaseTail && frostScrollTop != null) {
+        frostScrollTop = clampSampleScrollTop(frostScrollTop);
+        samplePager.frostScrollTop = frostScrollTop;
+        sampleScroll.scrollTop = frostScrollTop;
+      }
       var line = sampleScroll.clientHeight * .44;
       samplePager.anchors = acts.map(function (act) {
         var anchor = localSampleTop(act) + act.offsetHeight * .5 - line;
@@ -1150,6 +1183,8 @@
       samplePager.index = nearestSampleAnchor();
       if (wasReleaseTail) {
         samplePager.release = release;
+        samplePager.frostScrollTop = frostScrollTop != null ? frostScrollTop : sampleScroll.scrollTop;
+        sampleScroll.scrollTop = samplePager.frostScrollTop;
         sampleScroll.classList.add('is-release-tail');
         sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
       }
@@ -1281,6 +1316,7 @@
 
       sampleScroll.addEventListener('scroll', function () {
         if (samplePager.release > 0) {
+          holdReleaseScrollTop();
           requestMonitorUpdate();
           return;
         }
