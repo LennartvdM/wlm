@@ -1,0 +1,617 @@
+[
+  {
+    "file": "web/adj-brainstorm.webp",
+    "description": "ADJ brainstorm",
+    "alt": "ADJ brainstorm",
+    "sourceName": "ADJ brainstorm.jpg",
+    "sourceDimensions": {
+      "width": 6604,
+      "height": 4912
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1339
+    },
+    "bytes": 321854
+  },
+  {
+    "file": "web/audience-applauding.webp",
+    "description": "Audience applauding",
+    "alt": "Audience applauding",
+    "sourceName": "Audience applauding.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 164700
+  },
+  {
+    "file": "web/audience-at-keynote.webp",
+    "description": "Audience at keynote",
+    "alt": "Audience at keynote",
+    "sourceName": "Audience at keynote.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 252774
+  },
+  {
+    "file": "web/audience-in-the-background-diamond-award-trophies-in-the-foreground.webp",
+    "description": "Audience in the background, diamond award trophies in the foreground",
+    "alt": "Audience in the background, diamond award trophies in the foreground",
+    "sourceName": "Audience in the background, diamond award trophies in the foreground.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 224350
+  },
+  {
+    "file": "web/black-woman-on-stage-2.webp",
+    "description": "Black woman on stage 2",
+    "alt": "Black woman on stage 2",
+    "sourceName": "Black woman on stage 2.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 73102
+  },
+  {
+    "file": "web/black-woman-on-stage.webp",
+    "description": "Black woman on stage",
+    "alt": "Black woman on stage",
+    "sourceName": "Black woman on stage.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 114574
+  },
+  {
+    "file": "web/close-up-frontrow.webp",
+    "description": "Close up frontrow",
+    "alt": "Close up frontrow",
+    "sourceName": "Close up frontrow.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 185548
+  },
+  {
+    "file": "web/close-up-of-speaker-talking-to-black-woman.webp",
+    "description": "close up of speaker, talking to black woman",
+    "alt": "close up of speaker, talking to black woman",
+    "sourceName": "close up of speaker, talking to black woman.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 92704
+  },
+  {
+    "file": "web/close-up-of-the-diamond-award-trophies.webp",
+    "description": "Close up of the Diamond Award trophies",
+    "alt": "Close up of the Diamond Award trophies",
+    "sourceName": "Close up of the Diamond Award trophies.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 137902
+  },
+  {
+    "file": "web/close-up-panel-discussion.webp",
+    "description": "Close up panel discussion",
+    "alt": "Close up panel discussion",
+    "sourceName": "Close up panel discussion.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 136734
+  },
+  {
+    "file": "web/commission-on-stage-in-front-of-audience.webp",
+    "description": "Commission on stage in front of audience",
+    "alt": "Commission on stage in front of audience",
+    "sourceName": "Commision on stage in front of audience.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 140254
+  },
+  {
+    "file": "web/crowd-from-behind-down-the-aisle-looking-at-screen.webp",
+    "description": "Crowd from behind, down the aisle, looking at screen",
+    "alt": "Crowd from behind, down the aisle, looking at screen",
+    "sourceName": "Crowd from behind, down the isle, looking at screen.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 261962
+  },
+  {
+    "file": "web/crowd-looking-at-screen-hosts-look-as-well.webp",
+    "description": "Crowd looking at screen, hosts look as well",
+    "alt": "Crowd looking at screen, hosts look as well",
+    "sourceName": "Crowd looking at screen, hosts look as well.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 234860
+  },
+  {
+    "file": "web/crowd-looking-at-screen.webp",
+    "description": "Crowd looking at screen",
+    "alt": "Crowd looking at screen",
+    "sourceName": "Crowd looking at screen.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 242474
+  },
+  {
+    "file": "web/diamond-award-winners-but-not-this-year.webp",
+    "description": "Diamond award winners (but not this year)",
+    "alt": "Diamond award winners (but not this year)",
+    "sourceName": "Diamond award winners (but not this year).jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 158162
+  },
+  {
+    "file": "web/diamond-award-winners-posing-with-commission-not-this-year.webp",
+    "description": "Diamond Award winners posing with commission (not this year)",
+    "alt": "Diamond Award winners posing with commission (not this year)",
+    "sourceName": "Diamond Award winners posing with commision (not this year).jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 232186
+  },
+  {
+    "file": "web/entrance-of-nederlandse-bank-but-from-far-away-so-might-want-to-zoom-here-1.webp",
+    "description": "Entrance of Nederlandse Bank (but from far away so might want to zoom here) (1)",
+    "alt": "Entrance of Nederlandse Bank (but from far away so might want to zoom here) (1)",
+    "sourceName": "Entrance of Nederlandse Bank (but from far away so might wnat to zoom here) (1).jpg",
+    "sourceDimensions": {
+      "width": 1200,
+      "height": 675
+    },
+    "dimensions": {
+      "width": 1200,
+      "height": 675
+    },
+    "bytes": 290924
+  },
+  {
+    "file": "web/entrance-of-nederlandse-bank-but-from-far-away-so-might-want-to-zoom-here-2.webp",
+    "description": "Entrance of Nederlandse Bank (but from far away so might want to zoom here) (2)",
+    "alt": "Entrance of Nederlandse Bank (but from far away so might want to zoom here) (2)",
+    "sourceName": "Entrance of Nederlandse Bank (but from far away so might wnat to zoom here) (2).jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 327752
+  },
+  {
+    "file": "web/event-guests-standing-around-a-table.webp",
+    "description": "Event guests standing around a table",
+    "alt": "Event guests standing around a table",
+    "sourceName": "Event guests standing around a table.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 237374
+  },
+  {
+    "file": "web/four-women-standing-outside-on-stairs-posing-with-certificate.webp",
+    "description": "Four women standing outside on stairs, posing with certificate",
+    "alt": "Four women standing outside on stairs, posing with certificate",
+    "sourceName": "Four women standing outside on stairs, posing with certificate.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 298722
+  },
+  {
+    "file": "web/joop-addressing-the-crowd.webp",
+    "description": "Joop addressing the crowd",
+    "alt": "Joop addressing the crowd",
+    "sourceName": "Joop addressing the crowd.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 123268
+  },
+  {
+    "file": "web/joop-portrait-for-voorwoord.webp",
+    "description": "Joop Portrait for Voorwoord",
+    "alt": "Joop Portrait for Voorwoord",
+    "sourceName": "Joop Portrait for Voorwoord.png",
+    "sourceDimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "dimensions": {
+      "width": 1254,
+      "height": 1254
+    },
+    "bytes": 106008
+  },
+  {
+    "file": "web/joop-schippers-reflectie.webp",
+    "description": "Joop Schippers reflectie",
+    "alt": "Joop Schippers",
+    "sourceName": "d68b14b5-1bb1-425b-b10a-73fd61809b61.png",
+    "sourceDimensions": {
+      "width": 1619,
+      "height": 971
+    },
+    "dimensions": {
+      "width": 1619,
+      "height": 971
+    },
+    "bytes": 38516
+  },
+  {
+    "file": "web/keynote-speech-crowd-looks-at-screen-slides.webp",
+    "description": "Keynote speech, crowd looks at screen slides",
+    "alt": "Keynote speech, crowd looks at screen slides",
+    "sourceName": "Keynote speech, crowd looks at screen slides.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 185698
+  },
+  {
+    "file": "web/maurice-van-der-meijs.webp",
+    "description": "Vrouw aan tafel tijdens een gesprek",
+    "alt": "Vrouw aan tafel tijdens een gesprek",
+    "sourceName": "Maurice van der Meijs.jpg",
+    "sourceDimensions": {
+      "width": 1620,
+      "height": 1080
+    },
+    "dimensions": {
+      "width": 1620,
+      "height": 1080
+    },
+    "bytes": 157476
+  },
+  {
+    "file": "web/new-member-signing-a-paper-on-stage.webp",
+    "description": "New member signing a paper on stage",
+    "alt": "New member signing a paper on stage",
+    "sourceName": "New member signing a paper on stage.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 189216
+  },
+  {
+    "file": "web/panel-discussion-taken-from-behind-the-audience.webp",
+    "description": "Panel discussion taken from behind the audience",
+    "alt": "Panel discussion taken from behind the audience",
+    "sourceName": "Panel discussion taken from behind the audience.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1145
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1006
+    },
+    "bytes": 135106
+  },
+  {
+    "file": "web/people-networking-at-the-event.webp",
+    "description": "People networking at the event",
+    "alt": "People networking at the event",
+    "sourceName": "Peopel networking at the event.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 133794
+  },
+  {
+    "file": "web/people-networking-at-the-event-2.webp",
+    "description": "People networking at the event",
+    "alt": "People networking at the event",
+    "sourceName": "People networking at the event.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 142654
+  },
+  {
+    "file": "web/smaller-panel-discussion-smaller-audience.webp",
+    "description": "Smaller panel discussion, smaller audience",
+    "alt": "Smaller panel discussion, smaller audience",
+    "sourceName": "Smaller panel discussion, smaller audience.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1200
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1055
+    },
+    "bytes": 262610
+  },
+  {
+    "file": "web/two-people-on-stage-laughing-at-each-other.webp",
+    "description": "Two people on stage laughing at each other",
+    "alt": "Two people on stage laughing at each other",
+    "sourceName": "Two people on stage laughing at each other.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 80172
+  },
+  {
+    "file": "web/two-people-on-stage-talking-into-mic.webp",
+    "description": "Two people on stage, talking into mic",
+    "alt": "Two people on stage, talking into mic",
+    "sourceName": "Two people on stage, talking into mic.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 112854
+  },
+  {
+    "file": "web/two-women-in-the-audience-talking-to-each-other.webp",
+    "description": "Two women in the audience talking to each other",
+    "alt": "Two women in the audience talking to each other",
+    "sourceName": "Two women in the audience talking to each other.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 117836
+  },
+  {
+    "file": "web/two-women-on-stage-appearing-to-invite-more-over.webp",
+    "description": "Two women on stage appearing to invite more over",
+    "alt": "Two women on stage appearing to invite more over",
+    "sourceName": "Two women on stage appearing to invite more over.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 157442
+  },
+  {
+    "file": "web/two-women-on-stage-talking-to-each-other.webp",
+    "description": "Two women on stage talking to each other",
+    "alt": "Two women on stage talking to each other",
+    "sourceName": "Two women on stage talking to each other.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 161726
+  },
+  {
+    "file": "web/woman-pointing-at-charts-on-stage.webp",
+    "description": "Woman pointing at charts on stage",
+    "alt": "Woman pointing at charts on stage",
+    "sourceName": "Woman pointing at charts on stage.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 177724
+  },
+  {
+    "file": "web/woman-standing-in-front-of-stage-addressing-the-crowd.webp",
+    "description": "Woman standing in front of stage, addressing the crowd",
+    "alt": "Woman standing in front of stage, addressing the crowd",
+    "sourceName": "Woman standing in front of stage, addressing the crowd.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 249876
+  },
+  {
+    "file": "web/woman-with-mic-talking-to-black-woman-on-stage.webp",
+    "description": "woman with mic talking to black woman on stage",
+    "alt": "woman with mic talking to black woman on stage",
+    "sourceName": "woman with mic talking to black woman on stage.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 78292
+  },
+  {
+    "file": "web/women-networking.webp",
+    "description": "Women networking",
+    "alt": "Women networking",
+    "sourceName": "Women networking.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 159702
+  },
+  {
+    "file": "web/women-on-stage-photographed-from-behind-facing-audience.webp",
+    "description": "Women on stage, photographed from behind facing audience",
+    "alt": "Women on stage, photographed from behind facing audience",
+    "sourceName": "Women on stage, photographed from behind facing audience.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 258346
+  },
+  {
+    "file": "web/women-some-collaborating-partners.webp",
+    "description": "Women, some collaborating partners",
+    "alt": "Women, some collaborating partners",
+    "sourceName": "Women, some collaborating partners.jpg",
+    "sourceDimensions": {
+      "width": 2048,
+      "height": 1365
+    },
+    "dimensions": {
+      "width": 1800,
+      "height": 1200
+    },
+    "bytes": 167120
+  }
+]

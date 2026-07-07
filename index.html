@@ -7,7 +7,7 @@
   <meta name="description" content="Wilma Henderikse — maatschappelijk ondernemer, onderzoeker, auteur. Vraagstukken van sociale gelijkheid en rechtvaardigheid vormen een rode draad in mijn werk.">
   <link rel="canonical" href="https://wilmahenderikse.nl/">
   <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/style.css?v=scrollyception-17">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="nl_NL">
   <meta property="og:title" content="Wilma Henderikse">
@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://wilmahenderikse.nl/">
   <meta property="og:image" content="https://wilmahenderikse.nl/assets/img/wilma-portret.jpg">
 </head>
-<body>
+<body class="home-scrolly">
 
 <header class="site-header">
   <div class="wrap">
@@ -29,10 +29,10 @@
   </div>
 </header>
 
-<main>
+<main data-site-scrolly>
 
-  <section class="hero">
-    <div class="hero-grid">
+  <section class="hero site-step" data-site-step="start">
+    <div class="hero-grid" data-site-snap data-site-snap-primary>
       <div class="hero-text">
         <p class="kicker">maatschappelijk ondernemer<span class="sep">·</span>onderzoeker<span class="sep">·</span>auteur</p>
         <h1>Wilma<br>Henderikse</h1>
@@ -47,8 +47,8 @@
     </div>
   </section>
 
-  <section class="quote-band">
-    <div class="wrap">
+  <section class="quote-band site-step" data-site-step="quote">
+    <div class="wrap" data-site-snap data-site-snap-primary>
       <blockquote>
         <p>It’s the job that’s never started as takes longest to finish.</p>
         <cite>J.R.R. Tolkien</cite>
@@ -56,8 +56,33 @@
     </div>
   </section>
 
-  <section class="section tinted" id="werk">
-    <div class="wrap">
+  <section class="monitor-panorama site-step" id="laatste-project" aria-label="Laatste project: Monitor Talent naar de Top 2025" data-site-step="laatste-project" data-monitor-panorama>
+    <div class="monitor-intro wrap" data-site-snap>
+      <div>
+        <p class="kicker">laatste project</p>
+        <h2>Monitor Talent naar de Top 2025</h2>
+      </div>
+      <p>Ik laat hier een kort fragment zien; de volledige interactieve publicatie staat op haar eigen plek.</p>
+    </div>
+    <div class="monitor-stage" data-site-snap data-site-snap-primary>
+      <div class="monitor-void" aria-hidden="true">
+        <div class="monitor-photo-layer" data-monitor-photo-layer></div>
+      </div>
+      <div class="monitor-sample" data-monitor-sample>
+        <div class="monitor-sample-scroll" tabindex="0" role="region" aria-label="Voorproef van Monitor Talent naar de Top 2025" data-monitor-content-scroll>
+          <p class="monitor-loading">Monitorfragment wordt geladen...</p>
+        </div>
+      </div>
+      <div class="monitor-frost"></div>
+      <div class="monitor-release">
+        <p>Verder lezen</p>
+        <a href="https://monitortalent.nl/" rel="noopener">monitortalent.nl</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tinted site-step" id="werk" data-site-step="werk">
+    <div class="wrap" data-site-snap data-site-snap-primary>
       <div class="section-head">
         <h2>Mijn werk</h2>
         <p class="intro">Vraagstukken van sociale gelijkheid en rechtvaardigheid vormen een rode draad in mijn werk. Voorbeelden van publicaties vindt u hier:</p>
@@ -65,7 +90,7 @@
       </div>
     </div>
 
-    <div class="bento">
+    <div class="bento" data-site-snap>
       <a class="bento-card" href="publicaties/pdf/scherven-brengen-geluk.pdf" data-current="scherven-brengen-geluk">
         <span class="layer bottom" style="background:#b7c3d2"><img src="assets/img/covers/scherven-brengen-geluk.jpg" alt=""></span>
         <span class="layer top" style="background:#b7c3d2"><img src="assets/img/covers/scherven-brengen-geluk.jpg" alt=""></span>
@@ -116,8 +141,8 @@
     </div>
   </section>
 
-  <section class="about" id="over">
-    <div class="wrap">
+  <section class="about site-step" id="over" data-site-step="over">
+    <div class="wrap" data-site-snap data-site-snap-primary>
       <div>
         <h2>Over Wilma</h2>
         <p>Begon haar loopbaan als wetenschappelijk onderzoeker en hoofd Wetenschapswinkel bij de Erasmus universiteit, om zich vervolgens te specialiseren in marketing en communicatie. Richtte op Curaçao marketingbureau Insight op en stapte in 1993 over naar VanDoorneHuiskes als partner. Vraagstukken van sociale ongelijkheid, gender en diversiteit houden haar al een leven lang bezig. Zij schreef veel publicaties hierover en participeerde in diverse internationale commissies en projecten.</p>
@@ -129,8 +154,8 @@
     </div>
   </section>
 
-  <section class="section contact" id="contact">
-    <div class="wrap">
+  <section class="section contact site-step" id="contact" data-site-step="contact">
+    <div class="wrap" data-site-snap data-site-snap-primary>
       <div class="section-head">
         <h2>Vragen?</h2>
         <p class="intro">Hier kunt u mij bereiken</p>
@@ -153,7 +178,10 @@
   </div>
 </footer>
 
-<script src="assets/js/site.js" defer></script>
+<script src="monitor-sample/konva.min.js" defer></script>
+<script src="monitor-sample/cirkelgen-core.js" defer></script>
+<script src="monitor-sample/cirkel.js?v=portfolio-sample-2" defer></script>
+<script src="assets/js/site.js?v=scrollyception-17" defer></script>
 <script>document.getElementById('jaar').textContent = new Date().getFullYear();</script>
 </body>
 </html>
