@@ -100,6 +100,19 @@
     });
   }
 
+  /* Gebaren-tracker: wheel-events binnen ~180ms van elkaar horen bij hetzelfde
+     gebaar (trackpad-momentum). Grensovergangen tussen scrollers gebeuren
+     alleen op een VERS gebaar, zodat momentum nooit door een grens heen schiet. */
+  var wheelTracker = { ts: 0, fresh: true };
+  document.addEventListener('wheel', function (event) {
+    wheelTracker.fresh = event.timeStamp - wheelTracker.ts > 180;
+    wheelTracker.ts = event.timeStamp;
+  }, { capture: true, passive: true });
+
+  /* Brug van de binnenste scrollytell naar de buitenste: de Monitor-pager
+     geeft de scroll-intentie aan de site-snap door zodra hij aan zijn rand zit. */
+  var siteBridge = null;
+
   /* Buitenste scrollytelling: de homepage zelf bestaat uit hoofdstukken.
      De Monitor hieronder is dus een geneste scrollytell, geen los blok. */
   var siteScrolly = document.querySelector('[data-site-scrolly]');
@@ -116,6 +129,9 @@
     var siteAutoScrollTimer = 0;
     var siteAutoScrolling = false;
     var siteSnapBlockedUntil = 0;
+    var siteTouchActive = false;
+    var siteScrollDirection = 0;
+    var siteLastScrollY = window.scrollY;
     var siteReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var primarySiteTarget = function (step) {
       return step.querySelector('[data-site-snap-primary]') ||
@@ -136,19 +152,22 @@
     var siteMaxScroll = function () {
       return Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
     };
-    var nearestSiteTarget = function () {
+    var nearestSiteTargetIndex = function () {
       var center = siteSnapCenter();
-      var best = siteTargets[0];
+      var best = 0;
       var bestDistance = Infinity;
-      siteTargets.forEach(function (entry) {
+      siteTargets.forEach(function (entry, i) {
         var rect = entry.target.getBoundingClientRect();
         var distance = Math.abs(rect.top + rect.height * .5 - center);
         if (distance < bestDistance) {
-          best = entry;
+          best = i;
           bestDistance = distance;
         }
       });
       return best;
+    };
+    var nearestSiteTarget = function () {
+      return siteTargets[nearestSiteTargetIndex()];
     };
     var releaseSiteAutoScroll = function (delay) {
       clearTimeout(siteAutoScrollTimer);
@@ -158,10 +177,25 @@
         requestSiteStepUpdate();
       }, delay);
     };
+    /* Vers gebruikersgebaar wint altijd van een lopende auto-scroll. */
+    var cancelSiteAutoScroll = function () {
+      if (!siteAutoScrolling) { return; }
+      clearTimeout(siteAutoScrollTimer);
+      siteAutoScrolling = false;
+      window.scrollTo(window.scrollX, window.scrollY);
+    };
     var centerSiteTarget = function (target, behavior) {
       if (!target) { return; }
+      if (siteReducedMotion) { behavior = 'auto'; }
+      var styles = window.getComputedStyle(document.documentElement);
+      var padTop = cssPx(styles.scrollPaddingTop);
+      var snapH = window.innerHeight - padTop - cssPx(styles.scrollPaddingBottom);
       var rect = target.getBoundingClientRect();
-      var delta = rect.top + rect.height * .5 - siteSnapCenter();
+      /* doelen die hoger zijn dan het snap-venster (zoals de bento) lijnen we
+         aan de bovenkant uit in plaats van te centreren */
+      var delta = rect.height > snapH
+        ? rect.top - padTop
+        : rect.top + rect.height * .5 - siteSnapCenter();
       if (Math.abs(delta) < 2) { return; }
       var top = Math.max(0, Math.min(siteMaxScroll(), window.scrollY + delta));
       releaseSiteAutoScroll(behavior === 'smooth' ? 820 : 80);
@@ -202,14 +236,26 @@
 
     var scheduleSiteSettle = function () {
       clearTimeout(siteSettleTimer);
-      if (siteReducedMotion || siteAutoScrolling || Date.now() < siteSnapBlockedUntil) { return; }
+      if (siteReducedMotion || siteAutoScrolling || siteTouchActive || Date.now() < siteSnapBlockedUntil) { return; }
       siteSettleTimer = setTimeout(function () {
-        if (siteAutoScrolling || Date.now() < siteSnapBlockedUntil) { return; }
-        var best = nearestSiteTarget();
-        if (!best) { return; }
-        var rect = best.target.getBoundingClientRect();
-        var delta = rect.top + rect.height * .5 - siteSnapCenter();
-        if (Math.abs(delta) < 12 || Math.abs(delta) > window.innerHeight * .54) { return; }
+        if (siteAutoScrolling || siteTouchActive || Date.now() < siteSnapBlockedUntil) { return; }
+        if (!siteTargets.length) { return; }
+        var center = siteSnapCenter();
+        var index = nearestSiteTargetIndex();
+        var rect = siteTargets[index].target.getBoundingClientRect();
+        var delta = rect.top + rect.height * .5 - center;
+        /* Richtingsgevoelige zwaartekracht: wie omlaag veegde wil het VOLGENDE
+           item zien, niet teruggetrokken worden naar het vorige. Alleen als het
+           dichtstbijzijnde doel tegen de veegrichting in ligt, stappen we door. */
+        if (siteScrollDirection > 0 && delta < -12 && index < siteTargets.length - 1) { index += 1; }
+        else if (siteScrollDirection < 0 && delta > 12 && index > 0) { index -= 1; }
+        var best = siteTargets[index];
+        /* vrije doelen (zoals de bento) hebben geen zwaartekracht:
+           daar scrolt de lezer gewoon open door */
+        if (best.target.hasAttribute('data-site-snap-free')) { return; }
+        rect = best.target.getBoundingClientRect();
+        delta = rect.top + rect.height * .5 - center;
+        if (Math.abs(delta) < 12 || Math.abs(delta) > window.innerHeight * .9) { return; }
         centerSiteTarget(best.target, 'smooth');
       }, 180);
     };
@@ -245,11 +291,59 @@
     };
 
     document.addEventListener('wheel', function (event) {
+      if (wheelTracker.fresh) { cancelSiteAutoScroll(); }
       if (event.target && event.target.closest && event.target.closest('[data-monitor-content-scroll]')) {
         siteSnapBlockedUntil = Date.now() + 700;
       }
     }, { capture: true, passive: true });
+    window.addEventListener('touchstart', function () {
+      siteTouchActive = true;
+      cancelSiteAutoScroll();
+    }, { capture: true, passive: true });
+    var siteTouchEnd = function () {
+      siteTouchActive = false;
+      scheduleSiteSettle();
+    };
+    window.addEventListener('touchend', siteTouchEnd, { capture: true, passive: true });
+    window.addEventListener('touchcancel', siteTouchEnd, { capture: true, passive: true });
+
+    /* Brug voor de geneste Monitor-scrollytell: één stap omhoog of omlaag
+       in de buitenste hoofdstukken, vanaf het element dat erom vraagt. */
+    siteBridge = {
+      nudge: function (fromEl, direction) {
+        var index = -1;
+        siteTargets.forEach(function (entry, i) {
+          if (entry.target === fromEl) { index = i; }
+        });
+        if (index === -1) {
+          var center = siteSnapCenter();
+          var bestDistance = Infinity;
+          siteTargets.forEach(function (entry, i) {
+            var rect = entry.target.getBoundingClientRect();
+            var distance = Math.abs(rect.top + rect.height * .5 - center);
+            if (distance < bestDistance) {
+              bestDistance = distance;
+              index = i;
+            }
+          });
+        }
+        if (index === -1) { return false; }
+        var next = siteTargets[Math.max(0, Math.min(siteTargets.length - 1, index + direction))];
+        if (!next || next === siteTargets[index]) { return false; }
+        centerSiteTarget(next.target, 'smooth');
+        setSiteStep(next.step, next.target);
+        return true;
+      }
+    };
+
     window.addEventListener('scroll', function () {
+      var y = window.scrollY;
+      /* onthoud de reisrichting alleen voor echte gebaren, niet voor onze
+         eigen tweens — die zijn al onderweg naar het juiste doel */
+      if (!siteAutoScrolling && Math.abs(y - siteLastScrollY) > 1) {
+        siteScrollDirection = y > siteLastScrollY ? 1 : -1;
+      }
+      siteLastScrollY = y;
       requestSiteStepUpdate();
       scheduleSiteSettle();
     }, { passive: true });
@@ -567,13 +661,33 @@
       });
     };
 
+    /* Zit de pager aan zijn rand? Omlaag: frost volledig open.
+       Omhoog: geen frost en op (of boven) het eerste anker. */
+    var sampleAtBoundary = function (direction) {
+      if (direction > 0) { return samplePager.release >= .999; }
+      if (samplePager.release > .001) { return false; }
+      if (!samplePager.anchors.length) { measureSamplePager(); }
+      var first = samplePager.anchors.length ? samplePager.anchors[0] : 0;
+      return sampleScroll.scrollTop <= first + 2;
+    };
+
+    /* Overdracht aan de buitenste scrollytell — alleen op een vers gebaar,
+       zodat het momentum dat de frost opende niet meteen doorschiet. */
+    var handOffSample = function (direction) {
+      if (!wheelTracker.fresh || !siteBridge) { return; }
+      siteBridge.nudge(monitorStage, direction);
+    };
+
     var redirectReleaseWheel = function (event) {
       if (!sampleScroll) { return; }
-      var delta = event.deltaY;
+      var direction = event.deltaY > 0 ? 1 : -1;
       if (samplePager.release > 0) {
         event.preventDefault();
-        easeReleaseTo(delta < 0 ? 0 : 1);
-        return;
+        if (direction > 0 && sampleAtBoundary(1)) {
+          handOffSample(1);
+          return;
+        }
+        easeReleaseTo(direction < 0 ? 0 : 1);
       }
     };
 
@@ -1373,15 +1487,28 @@
     var wireSamplePager = function () {
       if (!sampleScroll || samplePager.wired) { return; }
       samplePager.wired = true;
+      var wheelBucket = 0;
+      var BEAT_THRESHOLD = 40; /* px; één muisklik of een bewuste trackpad-veeg */
       sampleScroll.addEventListener('wheel', function (event) {
-        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) { return; }
-        var direction = event.deltaY > 0 ? 1 : -1;
-        if (direction < 0 && sampleScroll.scrollTop <= 1) { return; }
+        /* normaliseer: Firefox stuurt regels (deltaMode 1), soms pagina's (2) */
+        var deltaY = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? sampleScroll.clientHeight : 1);
+        if (Math.abs(deltaY) <= Math.abs(event.deltaX)) { return; }
+        var direction = deltaY > 0 ? 1 : -1;
+        /* verticale wheel boven de sample is altijd van ons: elke uitgang
+           loopt via een expliciete overdracht, nooit via native doorschieten */
         event.preventDefault();
+        if (sampleAtBoundary(direction)) {
+          handOffSample(direction);
+          return;
+        }
+        if (wheelTracker.fresh) { wheelBucket = 0; }
         if (samplePager.busy) {
           armSamplePagerTail();
           return;
         }
+        wheelBucket += deltaY;
+        if (Math.abs(wheelBucket) < BEAT_THRESHOLD) { return; }
+        wheelBucket = 0;
         samplePager.busy = true;
         advanceSampleBeat(direction);
         armSamplePagerTail();
@@ -1393,6 +1520,11 @@
         if (key === 'ArrowDown' || key === 'PageDown' || key === ' ' || key === 'Spacebar') { direction = 1; }
         if (key === 'ArrowUp' || key === 'PageUp') { direction = -1; }
         if (!direction) { return; }
+        if (sampleAtBoundary(direction)) {
+          event.preventDefault();
+          if (siteBridge) { siteBridge.nudge(monitorStage, direction); }
+          return;
+        }
         if (samplePager.busy) {
           event.preventDefault();
           armSamplePagerTail();
