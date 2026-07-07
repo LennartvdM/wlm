@@ -100,12 +100,13 @@
     });
   }
 
-  /* Gebaren-tracker: wheel-events binnen ~180ms van elkaar horen bij hetzelfde
+  /* Gebaren-tracker: wheel-events vlak na elkaar horen bij hetzelfde
      gebaar (trackpad-momentum). Grensovergangen tussen scrollers gebeuren
      alleen op een VERS gebaar, zodat momentum nooit door een grens heen schiet. */
   var wheelTracker = { ts: 0, fresh: true };
+  var FRESH_MS = 120; /* stilte die een nieuw gebaar markeert; kort, want wachten voelt als vertraging */
   document.addEventListener('wheel', function (event) {
-    wheelTracker.fresh = event.timeStamp - wheelTracker.ts > 180;
+    wheelTracker.fresh = event.timeStamp - wheelTracker.ts > FRESH_MS;
     wheelTracker.ts = event.timeStamp;
   }, { capture: true, passive: true });
 
@@ -224,7 +225,7 @@
       siteTween.from = window.scrollY;
       siteTween.to = siteTargetTop(entry.target);
       siteTween.t0 = 0;
-      siteTween.ease = ease || easeInOutCubicSite;
+      siteTween.ease = ease || easeOutCubicSite;
       setSiteStep(entry.step, entry.target);
       var distance = Math.abs(siteTween.to - siteTween.from);
       if (distance < 2) {
@@ -233,11 +234,12 @@
         return;
       }
       siteTween.dur = Math.min(1050, Math.max(620, distance * .9));
+      tweenBucket = 0;
       siteAutoScrolling = true;
       var frame = function (time) {
         if (!siteTween.t0) { siteTween.t0 = time; }
         var progress = Math.min(1, (time - siteTween.t0) / siteTween.dur);
-        window.scrollTo(0, siteTween.from + (siteTween.to - siteTween.from) * siteTween.ease(progress));
+        window.scrollTo({ top: siteTween.from + (siteTween.to - siteTween.from) * siteTween.ease(progress), left: 0, behavior: 'instant' });
         if (progress < 1) {
           siteTween.raf = requestAnimationFrame(frame);
           return;
@@ -273,7 +275,7 @@
         var top = siteTargetTop(target);
         if (Math.abs(top - window.scrollY) < 2) { return; }
         releaseSiteAutoScroll(80);
-        window.scrollTo({ top: top, behavior: 'auto' });
+        window.scrollTo({ top: top, behavior: 'instant' });
         return;
       }
       var index = siteTargetIndexOf(target);
@@ -336,7 +338,7 @@
         delta = rect.top + rect.height * .5 - center;
         if (Math.abs(delta) < 12 || Math.abs(delta) > window.innerHeight * .9) { return; }
         centerSiteTarget(best.target, 'smooth');
-      }, 180);
+      }, 120);
     };
 
     var requestSiteStepUpdate = function () {
@@ -382,23 +384,57 @@
           zo scrollt één veeg nooit drie hoofdstukken voorbij.
        Vrije zones (bento), de Monitor-stage en ctrl+wheel (zoomen) blijven
        van de browser respectievelijk de binnenste pager. */
+    /* Geabsorbeerde input telt mee: aanhoudend scrollen (een lange sleep of
+       een zware zwaai) moet nooit stilvallen omdat er geen 'vers gebaar' is.
+       Hoge drempel tijdens een tween (momentum-staarten zijn fors), lagere
+       drempel op een geparkeerd item. Richtingwissel leegt de emmer. */
+    var RETARGET_PX = 900;
+    var PARKED_PX = 320;
+    var tweenBucket = 0;
+    var parkedBucket = 0;
+    var normalizedWheelDelta = function (event) {
+      return event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? window.innerHeight : 1);
+    };
+    var fillBucket = function (bucket, delta) {
+      if (bucket !== 0 && (bucket > 0) !== (delta > 0)) { bucket = 0; }
+      return bucket + delta;
+    };
     document.addEventListener('wheel', function (event) {
       if (event.ctrlKey) { return; }
       if (event.target && event.target.closest && event.target.closest('.monitor-stage')) { return; }
-      var direction = event.deltaY > 0 ? 1 : -1;
+      var delta = normalizedWheelDelta(event);
+      var direction = delta > 0 ? 1 : -1;
       if (siteTween.raf) {
         if (event.cancelable) { event.preventDefault(); }
-        if (wheelTracker.fresh) { retargetSiteTween(direction); }
+        if (wheelTracker.fresh) {
+          tweenBucket = 0;
+          retargetSiteTween(direction);
+          return;
+        }
+        tweenBucket = fillBucket(tweenBucket, delta);
+        if (Math.abs(tweenBucket) >= RETARGET_PX) {
+          tweenBucket = 0;
+          retargetSiteTween(direction);
+        }
         return;
       }
       var index = nearestSiteTargetIndex();
       var entry = siteTargets[index];
-      if (!entry || entry.target.hasAttribute('data-site-snap-free')) { return; }
-      if (Math.abs(siteTargetTop(entry.target) - window.scrollY) > 40) { return; }
+      if (!entry || entry.target.hasAttribute('data-site-snap-free')) { parkedBucket = 0; return; }
+      if (Math.abs(siteTargetTop(entry.target) - window.scrollY) > 40) { parkedBucket = 0; return; }
       var next = Math.max(0, Math.min(siteTargets.length - 1, index + direction));
       if (next === index) { return; }
       if (event.cancelable) { event.preventDefault(); }
-      if (wheelTracker.fresh) { runSiteTween(next); }
+      if (wheelTracker.fresh) {
+        parkedBucket = 0;
+        runSiteTween(next);
+        return;
+      }
+      parkedBucket = fillBucket(parkedBucket, delta);
+      if (Math.abs(parkedBucket) >= PARKED_PX) {
+        parkedBucket = 0;
+        runSiteTween(next);
+      }
     }, { capture: true, passive: false });
     window.addEventListener('touchstart', function () {
       siteTouchActive = true;
@@ -723,9 +759,7 @@
       var frame = function (time) {
         if (!startTime) { startTime = time; }
         var progress = Math.min(1, (time - startTime) / duration);
-        var eased = progress < .5
-          ? 4 * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        var eased = 1 - Math.pow(1 - progress, 3);
         setReleaseProgress(start + distance * eased);
         if (progress < 1) {
           samplePager.releaseRaf = requestAnimationFrame(frame);
@@ -1539,9 +1573,7 @@
       var frame = function (time) {
         if (!startTime) { startTime = time; }
         var progress = Math.min(1, (time - startTime) / duration);
-        var eased = progress < .5
-          ? 4 * progress * progress * progress
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        var eased = 1 - Math.pow(1 - progress, 3);
         setSampleY(start + distance * eased);
         if (progress < 1) {
           samplePager.raf = requestAnimationFrame(frame);
@@ -1613,11 +1645,25 @@
         if (wheelTracker.fresh) { wheelBucket = 0; }
         if (samplePager.busy) {
           /* nieuwe intentie tijdens een lopende beat-tween: stuur het doel bij
-             in plaats van het gebaar te negeren */
-          if (wheelTracker.fresh && samplePager.raf && samplePager.release <= .001) {
-            var queued = samplePager.index + direction;
-            if (queued >= 0 && queued < samplePager.anchors.length) {
-              goSampleBeat(queued);
+             in plaats van het gebaar te negeren; aanhoudend scrollen telt op */
+          if (samplePager.raf && samplePager.release <= .001) {
+            var queue = false;
+            if (wheelTracker.fresh) {
+              queue = true;
+              wheelBucket = 0;
+            } else {
+              if (wheelBucket !== 0 && (wheelBucket > 0) !== (deltaY > 0)) { wheelBucket = 0; }
+              wheelBucket += deltaY;
+              if (Math.abs(wheelBucket) >= 700) {
+                queue = true;
+                wheelBucket = 0;
+              }
+            }
+            if (queue) {
+              var queued = samplePager.index + direction;
+              if (queued >= 0 && queued < samplePager.anchors.length) {
+                goSampleBeat(queued);
+              }
             }
           }
           armSamplePagerTail();
