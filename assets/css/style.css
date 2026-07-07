@@ -361,18 +361,15 @@ section { scroll-margin-top: 4.5rem; }
 .bento-card .layer {
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
 }
 .bento-card .layer img {
-  max-width: 86%;
-  max-height: 86%;
-  width: auto;
-  height: auto;
-  box-shadow: 0 10px 28px -12px rgba(0, 0, 0, .4);
-  transition: transform .25s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  transition: transform .3s ease;
 }
-.bento-card:hover .layer img { transform: scale(1.02); }
+.bento-card:hover .layer img { transform: scale(1.03); }
 .bento-card .layer.top {
   z-index: 2;
   transition: opacity .9s ease;
