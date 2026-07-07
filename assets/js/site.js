@@ -177,16 +177,7 @@
         requestSiteStepUpdate();
       }, delay);
     };
-    /* Vers gebruikersgebaar wint altijd van een lopende auto-scroll. */
-    var cancelSiteAutoScroll = function () {
-      if (!siteAutoScrolling) { return; }
-      clearTimeout(siteAutoScrollTimer);
-      siteAutoScrolling = false;
-      window.scrollTo(window.scrollX, window.scrollY);
-    };
-    var centerSiteTarget = function (target, behavior) {
-      if (!target) { return; }
-      if (siteReducedMotion) { behavior = 'auto'; }
+    var siteTargetTop = function (target) {
       var styles = window.getComputedStyle(document.documentElement);
       var padTop = cssPx(styles.scrollPaddingTop);
       var snapH = window.innerHeight - padTop - cssPx(styles.scrollPaddingBottom);
@@ -196,10 +187,98 @@
       var delta = rect.height > snapH
         ? rect.top - padTop
         : rect.top + rect.height * .5 - siteSnapCenter();
-      if (Math.abs(delta) < 2) { return; }
-      var top = Math.max(0, Math.min(siteMaxScroll(), window.scrollY + delta));
-      releaseSiteAutoScroll(behavior === 'smooth' ? 820 : 80);
-      window.scrollTo({ top: top, behavior: behavior });
+      return Math.max(0, Math.min(siteMaxScroll(), window.scrollY + delta));
+    };
+    var siteTargetIndexOf = function (target) {
+      for (var i = 0; i < siteTargets.length; i++) {
+        if (siteTargets[i].target === target) { return i; }
+      }
+      return -1;
+    };
+
+    /* Eigen tween voor de paginascroll: rustiger dan de browser-smooth-scroll
+       én bijstuurbaar. Tijdens de tween is de wheel van ons: een vers gebaar
+       stuurt het DOEL bij (één item verder of terug) in plaats van dat het de
+       animatie ruw afbreekt of genegeerd wordt. */
+    var easeInOutCubicSite = function (t) {
+      return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
+    var easeOutCubicSite = function (t) {
+      return 1 - Math.pow(1 - t, 3);
+    };
+    var siteTween = { raf: 0, index: -1, from: 0, to: 0, t0: 0, dur: 0, ease: null };
+    var stopSiteTween = function () {
+      if (siteTween.raf) {
+        cancelAnimationFrame(siteTween.raf);
+        siteTween.raf = 0;
+      }
+      siteTween.index = -1;
+      siteAutoScrolling = false;
+      clearTimeout(siteAutoScrollTimer);
+    };
+    var runSiteTween = function (index, ease) {
+      var entry = siteTargets[index];
+      if (!entry) { return; }
+      if (siteTween.raf) { cancelAnimationFrame(siteTween.raf); }
+      siteTween.index = index;
+      siteTween.from = window.scrollY;
+      siteTween.to = siteTargetTop(entry.target);
+      siteTween.t0 = 0;
+      siteTween.ease = ease || easeInOutCubicSite;
+      setSiteStep(entry.step, entry.target);
+      var distance = Math.abs(siteTween.to - siteTween.from);
+      if (distance < 2) {
+        stopSiteTween();
+        requestSiteStepUpdate();
+        return;
+      }
+      siteTween.dur = Math.min(1050, Math.max(620, distance * .9));
+      siteAutoScrolling = true;
+      var frame = function (time) {
+        if (!siteTween.t0) { siteTween.t0 = time; }
+        var progress = Math.min(1, (time - siteTween.t0) / siteTween.dur);
+        window.scrollTo(0, siteTween.from + (siteTween.to - siteTween.from) * siteTween.ease(progress));
+        if (progress < 1) {
+          siteTween.raf = requestAnimationFrame(frame);
+          return;
+        }
+        siteTween.raf = 0;
+        siteTween.index = -1;
+        siteAutoScrolling = false;
+        requestSiteStepUpdate();
+      };
+      siteTween.raf = requestAnimationFrame(frame);
+    };
+    var retargetSiteTween = function (direction) {
+      if (siteTween.index === -1) { return; }
+      var current = siteTargets[siteTween.index];
+      /* bijsturen naar een vrij doel = loslaten: daar scrolt de lezer zelf */
+      if (direction > 0 && current && current.target.hasAttribute('data-site-snap-free')) {
+        stopSiteTween();
+        return;
+      }
+      var next = Math.max(0, Math.min(siteTargets.length - 1, siteTween.index + direction));
+      if (next === siteTween.index) { return; }
+      /* easeOut: we zijn al onderweg, dus niet opnieuw aanzetten vanuit stilstand */
+      runSiteTween(next, easeOutCubicSite);
+    };
+    /* Aanraking = de lezer pakt de pagina vast; tween meteen loslaten. */
+    var cancelSiteAutoScroll = function () {
+      stopSiteTween();
+    };
+    var centerSiteTarget = function (target, behavior) {
+      if (!target) { return; }
+      if (siteReducedMotion) { behavior = 'auto'; }
+      if (behavior !== 'smooth') {
+        var top = siteTargetTop(target);
+        if (Math.abs(top - window.scrollY) < 2) { return; }
+        releaseSiteAutoScroll(80);
+        window.scrollTo({ top: top, behavior: 'auto' });
+        return;
+      }
+      var index = siteTargetIndexOf(target);
+      if (index === -1) { return; }
+      runSiteTween(index);
     };
     var siteTargets = [];
     siteSteps.forEach(function (step) {
@@ -291,11 +370,36 @@
     };
 
     document.addEventListener('wheel', function (event) {
-      if (wheelTracker.fresh) { cancelSiteAutoScroll(); }
       if (event.target && event.target.closest && event.target.closest('[data-monitor-content-scroll]')) {
         siteSnapBlockedUntil = Date.now() + 700;
       }
     }, { capture: true, passive: true });
+    /* Wheel-eigenaarschap van de buitenste scrollytell.
+       1. Tijdens een tween: momentum wordt geabsorbeerd, een vers gebaar
+          stuurt het doel bij (één item verder of terug).
+       2. Geparkeerd op een item: het eerste verse gebaar start de glijvlucht
+          naar het volgende item en de rest van het gebaar wordt geabsorbeerd —
+          zo scrollt één veeg nooit drie hoofdstukken voorbij.
+       Vrije zones (bento), de Monitor-stage en ctrl+wheel (zoomen) blijven
+       van de browser respectievelijk de binnenste pager. */
+    document.addEventListener('wheel', function (event) {
+      if (event.ctrlKey) { return; }
+      if (event.target && event.target.closest && event.target.closest('.monitor-stage')) { return; }
+      var direction = event.deltaY > 0 ? 1 : -1;
+      if (siteTween.raf) {
+        if (event.cancelable) { event.preventDefault(); }
+        if (wheelTracker.fresh) { retargetSiteTween(direction); }
+        return;
+      }
+      var index = nearestSiteTargetIndex();
+      var entry = siteTargets[index];
+      if (!entry || entry.target.hasAttribute('data-site-snap-free')) { return; }
+      if (Math.abs(siteTargetTop(entry.target) - window.scrollY) > 40) { return; }
+      var next = Math.max(0, Math.min(siteTargets.length - 1, index + direction));
+      if (next === index) { return; }
+      if (event.cancelable) { event.preventDefault(); }
+      if (wheelTracker.fresh) { runSiteTween(next); }
+    }, { capture: true, passive: false });
     window.addEventListener('touchstart', function () {
       siteTouchActive = true;
       cancelSiteAutoScroll();
@@ -310,6 +414,9 @@
     /* Brug voor de geneste Monitor-scrollytell: één stap omhoog of omlaag
        in de buitenste hoofdstukken, vanaf het element dat erom vraagt. */
     siteBridge = {
+      busy: function () {
+        return siteTween.raf !== 0;
+      },
       nudge: function (fromEl, direction) {
         var index = -1;
         siteTargets.forEach(function (entry, i) {
@@ -612,7 +719,7 @@
         return;
       }
       var startTime = 0;
-      var duration = 460;
+      var duration = 640;
       var frame = function (time) {
         if (!startTime) { startTime = time; }
         var progress = Math.min(1, (time - startTime) / duration);
@@ -1428,7 +1535,7 @@
         return;
       }
       var startTime = 0;
-      var duration = Math.min(820, Math.max(420, Math.abs(distance) * .78));
+      var duration = Math.min(980, Math.max(580, Math.abs(distance) * .95));
       var frame = function (time) {
         if (!startTime) { startTime = time; }
         var progress = Math.min(1, (time - startTime) / duration);
@@ -1490,6 +1597,8 @@
       var wheelBucket = 0;
       var BEAT_THRESHOLD = 40; /* px; één muisklik of een bewuste trackpad-veeg */
       sampleScroll.addEventListener('wheel', function (event) {
+        /* tijdens een pagina-tween is de wheel al van de buitenste scrollytell */
+        if (siteBridge && siteBridge.busy()) { return; }
         /* normaliseer: Firefox stuurt regels (deltaMode 1), soms pagina's (2) */
         var deltaY = event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? sampleScroll.clientHeight : 1);
         if (Math.abs(deltaY) <= Math.abs(event.deltaX)) { return; }
@@ -1503,6 +1612,14 @@
         }
         if (wheelTracker.fresh) { wheelBucket = 0; }
         if (samplePager.busy) {
+          /* nieuwe intentie tijdens een lopende beat-tween: stuur het doel bij
+             in plaats van het gebaar te negeren */
+          if (wheelTracker.fresh && samplePager.raf && samplePager.release <= .001) {
+            var queued = samplePager.index + direction;
+            if (queued >= 0 && queued < samplePager.anchors.length) {
+              goSampleBeat(queued);
+            }
+          }
           armSamplePagerTail();
           return;
         }
@@ -1515,6 +1632,7 @@
       }, { passive: false });
 
       sampleScroll.addEventListener('keydown', function (event) {
+        if (siteBridge && siteBridge.busy()) { event.preventDefault(); return; }
         var key = event.key;
         var direction = 0;
         if (key === 'ArrowDown' || key === 'PageDown' || key === ' ' || key === 'Spacebar') { direction = 1; }
