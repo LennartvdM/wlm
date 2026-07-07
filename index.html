@@ -32,8 +32,8 @@
 <main>
 
   <section class="hero">
-    <div class="wrap">
-      <div>
+    <div class="hero-grid">
+      <div class="hero-text">
         <p class="kicker">maatschappelijk ondernemer<span class="sep">·</span>onderzoeker<span class="sep">·</span>auteur</p>
         <h1>Wilma<br>Henderikse</h1>
         <p class="lede">Vraagstukken van sociale gelijkheid en rechtvaardigheid vormen de rode draad in mijn werk.</p>
@@ -41,10 +41,6 @@
           <a class="btn" href="publicaties/">Bekijk publicaties</a>
           <a class="btn ghost" href="#over">Over Wilma</a>
         </div>
-        <blockquote class="hero-quote">
-          <p>“It’s the job that’s never started as takes longest to finish.”</p>
-          <cite>J.R.R. Tolkien</cite>
-        </blockquote>
       </div>
       <figure class="portrait">
         <img src="assets/img/wilma-portret.jpg" alt="Portret van Wilma Henderikse" width="1000" height="1063" fetchpriority="high">
@@ -52,45 +48,54 @@
     </div>
   </section>
 
+  <section class="quote-band">
+    <div class="wrap">
+      <blockquote>
+        <p>It’s the job that’s never started as takes longest to finish.</p>
+        <cite>J.R.R. Tolkien</cite>
+      </blockquote>
+    </div>
+  </section>
+
   <section class="section tinted" id="werk">
     <div class="wrap">
       <div class="section-head">
         <p class="kicker">Mijn werk</p>
-        <h2>Onderzoek naar gelijke kansen, in de volle breedte</h2>
-        <p class="intro">Ruim veertig rapporten, monitors en artikelen — geschreven voor ministeries, kennisinstituten en organisaties die werk willen maken van gelijke kansen. Een greep uit de thema’s:</p>
+        <h2>De oogst van een werkend leven</h2>
+        <p class="intro">Ruim veertig rapporten, monitors en artikelen over gelijke kansen — geschreven voor ministeries, kennisinstituten en organisaties. Vijf thema’s lopen er als rode draden doorheen:</p>
       </div>
       <div class="themes">
-        <a class="theme-card" href="publicaties/#vrouwen-naar-de-top">
+        <a class="theme-card c-red" href="publicaties/#vrouwen-naar-de-top">
           <span class="count">15 publicaties</span>
           <h3>Vrouwen naar de top</h3>
           <p>De jaarlijkse Monitor Talent naar de Top, de Bedrijvenmonitor Topvrouwen en onderzoek naar het glazen plafond.</p>
           <span class="go">Naar het overzicht →</span>
         </a>
-        <a class="theme-card" href="publicaties/#wetenschap-en-zorg">
+        <a class="theme-card c-blue" href="publicaties/#wetenschap-en-zorg">
           <span class="count">4 publicaties</span>
           <h3>Wetenschap &amp; zorg</h3>
           <p>Loopbanen van vrouwen in de academische en medische wereld, van UMC’s tot de Monitor Vrouwelijke Hoogleraren.</p>
           <span class="go">Naar het overzicht →</span>
         </a>
-        <a class="theme-card" href="publicaties/#diversiteit-en-inclusie">
+        <a class="theme-card c-green" href="publicaties/#diversiteit-en-inclusie">
           <span class="count">7 publicaties</span>
           <h3>Diversiteit &amp; inclusie</h3>
           <p>Over de relatie tussen diversiteit en kwaliteit, culturele diversiteit en werken aan non-discriminatie.</p>
           <span class="go">Naar het overzicht →</span>
         </a>
-        <a class="theme-card" href="publicaties/#emancipatie-en-gender">
+        <a class="theme-card c-pink" href="publicaties/#emancipatie-en-gender">
           <span class="count">6 publicaties</span>
           <h3>Emancipatie &amp; gender</h3>
           <p>Gender mainstreaming, genderbewust personeelsbeleid en internationaal vergelijkend emancipatieonderzoek.</p>
           <span class="go">Naar het overzicht →</span>
         </a>
-        <a class="theme-card" href="publicaties/#werk-zorg-en-levensloop">
+        <a class="theme-card c-orange" href="publicaties/#werk-zorg-en-levensloop">
           <span class="count">6 publicaties</span>
           <h3>Werk, zorg &amp; levensloop</h3>
           <p>Werkende vaders, deeltijd en langer doorwerken: de combinatie van werk en leven, van start tot slot van de loopbaan.</p>
           <span class="go">Naar het overzicht →</span>
         </a>
-        <a class="theme-card" href="https://www.researchgate.net/profile/Wilma_Henderikse" rel="noopener">
+        <a class="theme-card c-gold" href="https://www.researchgate.net/profile/Wilma_Henderikse" rel="noopener">
           <span class="count">Extern profiel</span>
           <h3>ResearchGate</h3>
           <p>Wetenschappelijke publicaties en citaties zijn ook te vinden op mijn ResearchGate-profiel.</p>
@@ -104,8 +109,8 @@
     <div class="wrap">
       <div class="section-head">
         <p class="kicker">Uitgelicht</p>
-        <h2>Een greep uit de publicaties</h2>
-        <p class="intro">Elke omslag opent de publicatie als pdf. Het volledige archief staat op de publicatiepagina.</p>
+        <h2>Om trots op te zijn</h2>
+        <p class="intro">Een greep uit de kast. Elke omslag opent de publicatie zelf; het volledige archief staat op de publicatiepagina.</p>
       </div>
       <div class="mosaic">
         <a class="tile" href="publicaties/pdf/scherven-brengen-geluk.pdf">
@@ -131,6 +136,10 @@
         <a class="tile" href="publicaties/pdf/sleutels-tot-succes.pdf">
           <img src="assets/img/covers/sleutels-tot-succes.jpg" alt="" loading="lazy" width="640" height="453">
           <span class="tile-title">Sleutels tot succes</span>
+        </a>
+        <a class="tile" href="#over">
+          <img src="assets/img/covers/lepelaars-tile.jpg" alt="" loading="lazy" width="640" height="640">
+          <span class="tile-title">En tussen het werk door: jonge lepelaars →</span>
         </a>
         <a class="tile" href="publicaties/pdf/vrouwen-in-de-academische-top-umcs.pdf">
           <img src="assets/img/covers/vrouwen-in-de-academische-top-umcs.jpg" alt="" loading="lazy" width="640" height="906">

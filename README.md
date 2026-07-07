@@ -23,7 +23,7 @@ assets/img/              Geoptimaliseerde afbeeldingen + favicon
 - **Geen afhankelijkheden.** Puur HTML/CSS/JS; werkt op elke statische host (GitHub Pages, Netlify, …).
 - **Zelf-gehost lettertype.** Montserrat is gesubset naar latin/latin-ext en lokaal opgenomen; geen Google Fonts-requests.
 - **E-mailadres niet in de DOM.** Het adres wordt pas na een klik uit tekencodes samengesteld (spam-oogst tegengaan).
-- **Palet uit het eigen materiaal.** Diep groen en vermiljoenrood komen uit het portret en de omslagen van de monitors.
+- **Palet uit het eigen materiaal.** Het warme geel komt van de oorspronkelijke site; diep groen en vermiljoenrood uit het portret en de omslagen van de monitors.
 - **Zonder JavaScript blijft alles bruikbaar**; het filter en de e-mailknop zijn extra's.
 
 ## Lokaal bekijken
