@@ -9,17 +9,18 @@ werkkopie verwijderd, maar blijft beschikbaar in de git-historie.
 ## Structuur
 
 ```
-index.html               Homepage (hero, thema's, uitgelichte publicaties, over, contact)
-publicaties/index.html   Doorzoekbaar publicatie-archief, gegroepeerd op thema
+index.html               Homepage (hero, mijn werk + omslagcollage, over Wilma, contact)
+publicaties/index.html   Doorzoekbare publicatielijst, in de oorspronkelijke volgorde
 publicaties/pdf/         41 publicaties als pdf, met leesbare bestandsnamen
 assets/css/style.css     Eén stylesheet, geen frameworks
-assets/js/site.js        E-mail-onthulling + archief-filter (progressive enhancement)
+assets/js/site.js        E-mail-onthulling + lijstfilter (progressive enhancement)
 assets/fonts/            Montserrat (woff2, gesubset, self-hosted)
 assets/img/              Geoptimaliseerde afbeeldingen + favicon
 ```
 
 ## Uitgangspunten
 
+- **Alle tekst is van Wilma zelf.** Koppen, bio, citaat en publicatietitels zijn letterlijk overgenomen van de oorspronkelijke site; er is geen redactionele tekst toegevoegd.
 - **Geen afhankelijkheden.** Puur HTML/CSS/JS; werkt op elke statische host (GitHub Pages, Netlify, …).
 - **Zelf-gehost lettertype.** Montserrat is gesubset naar latin/latin-ext en lokaal opgenomen; geen Google Fonts-requests.
 - **E-mailadres niet in de DOM.** Het adres wordt pas na een klik uit tekencodes samengesteld (spam-oogst tegengaan).
