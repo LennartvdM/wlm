@@ -493,6 +493,10 @@ body.home-scrolly [data-site-snap] {
 .monitor-photo-drift .pd-card.pd-out {
   transition: opacity var(--pd-fade) var(--ease);
 }
+.monitor-panorama.is-photo-paused .monitor-photo-drift,
+.monitor-panorama.is-photo-paused .monitor-photo-drift .pd-card {
+  transition: none !important;
+}
 .monitor-photo-drift .pd-mask-layer {
   position: absolute;
   inset: 0;

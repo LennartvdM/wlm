@@ -274,6 +274,8 @@
     var monitorTicking = false;
     var monitorPhotoMaskQueued = false;
     var monitorPhotoSlots = [];
+    var monitorPhotoPaused = false;
+    var monitorPhotoResume = null;
     var activeAct = null;
     var acts = [];
     var samplePager = {
@@ -489,9 +491,12 @@
     var setReleaseProgress = function (value) {
       var release = clamp01(value);
       if (release > .001 && samplePager.release <= .001) {
+        snapCirkelContent();
+        pauseMonitorPhotoDrift();
         samplePager.frostScrollTop = sampleScroll.scrollTop;
       } else if (release <= .001) {
         samplePager.frostScrollTop = null;
+        resumeMonitorPhotoDrift();
       }
       samplePager.release = release;
       if (release > .001) { holdReleaseScrollTop(); }
@@ -539,6 +544,7 @@
       }
       samplePager.release = 0;
       samplePager.frostScrollTop = null;
+      resumeMonitorPhotoDrift();
       sampleScroll.classList.remove('is-release-tail');
       sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
     };
@@ -546,10 +552,12 @@
     var snapCirkelContent = function () {
       if (!sampleScroll) { return; }
       Array.prototype.slice.call(sampleScroll.querySelectorAll('.cirkel-mount .konvajs-content')).forEach(function (content) {
-        var mountRect = content.parentElement.getBoundingClientRect();
-        var rect = content.getBoundingClientRect();
-        var targetLeft = Math.round(rect.left) - mountRect.left;
-        var targetTop = Math.round(rect.top) - mountRect.top;
+        var mount = content.parentElement;
+        var mountRect = mount.getBoundingClientRect();
+        var rawLeft = ((mount.clientWidth || mountRect.width) - (content.offsetWidth || content.getBoundingClientRect().width)) / 2;
+        var rawTop = ((mount.clientHeight || mountRect.height) - (content.offsetHeight || content.getBoundingClientRect().height)) / 2;
+        var targetLeft = Math.round(mountRect.left + rawLeft) - mountRect.left;
+        var targetTop = Math.round(mountRect.top + rawTop) - mountRect.top;
         if (Math.abs((parseFloat(content.style.left) || 0) - targetLeft) < .001 &&
             Math.abs((parseFloat(content.style.top) || 0) - targetTop) < .001) {
           return;
@@ -867,6 +875,73 @@
       requestAnimationFrame(updateMonitorPhotoMasks);
     };
 
+    var freezeMonitorPhotoElement = function (el) {
+      if (!el) { return; }
+      var style = getComputedStyle(el);
+      el.style.transition = 'none';
+      el.style.opacity = style.opacity;
+      if (el._kb) {
+        try {
+          if (el._kb.pause) { el._kb.pause(); }
+          else { el._kb.cancel(); }
+        } catch (e) {}
+      }
+      if (style.transform && style.transform !== 'none') {
+        el.style.transform = style.transform;
+      }
+    };
+
+    var pauseMonitorPhotoDrift = function () {
+      if (monitorPhotoPaused) { return; }
+      monitorPhotoPaused = true;
+      monitor.classList.add('is-photo-paused');
+      monitorPhotoSlots.forEach(function (slot) {
+        if (!slot) { return; }
+        if (slot.timer) {
+          clearTimeout(slot.timer);
+          slot.timer = 0;
+        }
+        if (slot.settleTimer) {
+          clearTimeout(slot.settleTimer);
+          slot.settleTimer = 0;
+        }
+        freezeMonitorPhotoElement(slot.host);
+        freezeMonitorPhotoElement(slot.top);
+        freezeMonitorPhotoElement(slot.under);
+      });
+    };
+
+    var settleMonitorPhotoSlot = function (slot) {
+      if (!slot || !slot.top || !slot.under) { return; }
+      var topOpacity = parseFloat(getComputedStyle(slot.top).opacity || '1');
+      var underOpacity = parseFloat(getComputedStyle(slot.under).opacity || '0');
+      if (underOpacity > topOpacity && slot.under.getAttribute('src')) {
+        var tmp = slot.top;
+        slot.top = slot.under;
+        slot.under = tmp;
+      }
+      [slot.host, slot.top, slot.under].forEach(function (el) {
+        if (!el) { return; }
+        el.style.transition = '';
+        el.style.opacity = '';
+      });
+      slot.top.classList.remove('pd-out');
+      slot.under.classList.remove('pd-out');
+      slot.top.style.zIndex = '2';
+      slot.under.style.zIndex = '1';
+      slot.top.style.opacity = '1';
+      slot.under.style.opacity = '1';
+    };
+
+    var resumeMonitorPhotoDrift = function () {
+      if (!monitorPhotoPaused) { return; }
+      monitorPhotoPaused = false;
+      monitor.classList.remove('is-photo-paused');
+      monitorPhotoSlots.forEach(settleMonitorPhotoSlot);
+      if (monitorPhotoResume) { monitorPhotoResume(); }
+      schedulePhotoMasks();
+    };
+
     var focusMonitorTransform = function (focus, zoom) {
       return 'translate(' + focus.tx.toFixed(1) + 'px,' + focus.ty.toFixed(1) + 'px) scale(' + (focus.s * zoom).toFixed(4) + ')';
     };
@@ -938,7 +1013,7 @@
     };
 
     var kenBurnsMonitorPhoto = function (img) {
-      if (reduceMotion || !img || !img.animate) { return; }
+      if (reduceMotion || monitorPhotoPaused || !img || !img.animate) { return; }
       if (img._kb) {
         try { img._kb.cancel(); } catch (e) {}
       }
@@ -996,7 +1071,7 @@
           var mask = document.createElement('div');
           mask.className = 'pd-mask-layer';
           host.appendChild(mask);
-          return { host: host, top: a, under: b, mask: mask, timer: 0, cell: '' };
+          return { host: host, top: a, under: b, mask: mask, timer: 0, settleTimer: 0, cell: '' };
         };
 
         var nextImg = function () {
@@ -1054,6 +1129,7 @@
 
         var crossfade = function (slot, name, done) {
           preload(name, function () {
+            if (monitorPhotoPaused) { return; }
             if (activeSlot !== slot) { return; }
             slot.under.src = monitorPhotoUrl(name);
             slot.under.style.opacity = '1';
@@ -1064,6 +1140,10 @@
               if (settled) { return; }
               settled = true;
               slot.top.removeEventListener('transitionend', settle);
+              if (slot.settleTimer) {
+                clearTimeout(slot.settleTimer);
+                slot.settleTimer = 0;
+              }
               slot.under.style.zIndex = '2';
               slot.top.style.zIndex = '1';
               slot.top.classList.remove('pd-out');
@@ -1078,10 +1158,11 @@
             slot.top.addEventListener('transitionend', settle);
             requestAnimationFrame(function () {
               requestAnimationFrame(function () {
+                if (monitorPhotoPaused) { return; }
                 slot.top.style.opacity = '0';
               });
             });
-            setTimeout(settle, 3200);
+            slot.settleTimer = setTimeout(settle, 3200);
           });
         };
 
@@ -1090,6 +1171,7 @@
           var shows = 2 + Math.floor(Math.random() * 2);
           var count = 1;
           var step = function () {
+            if (monitorPhotoPaused) { return; }
             if (activeSlot !== slot) { return; }
             if (count >= shows) {
               done();
@@ -1104,6 +1186,7 @@
         };
 
         advance = function (previous) {
+          if (monitorPhotoPaused) { return; }
           var slot = activeSlot === monitorPhotoSlots[0] ? monitorPhotoSlots[1] : monitorPhotoSlots[0];
           var cell = pickCell();
           var first = nextImg();
@@ -1126,6 +1209,15 @@
               runCycle(slot, function () { advance(slot); });
             }
           });
+        };
+
+        monitorPhotoResume = function () {
+          if (reduceMotion) { return; }
+          if (!activeSlot) {
+            setTimeout(function () { if (!monitorPhotoPaused) { advance(null); } }, 900);
+            return;
+          }
+          runCycle(activeSlot, function () { advance(activeSlot); });
         };
 
         monitorPhotoSlots = [makeSlot(), makeSlot()];
