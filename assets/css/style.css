@@ -395,11 +395,6 @@ section { scroll-margin-top: 4.5rem; }
 
 .bento-more { margin: 2rem 0 0; text-align: center; }
 
-/* landing: the bento is the first screen; header + bento fill the viewport */
-.section.landing { padding-top: .9rem; }
-.landing .bento { height: max(34rem, calc(100vh - 5.6rem)); }
-.landing .section-head { margin-top: clamp(2.5rem, 5vw, 4rem); margin-bottom: 0; }
-
 @media (max-width: 56rem) {
   .bento {
     grid-template-columns: repeat(2, 1fr);
