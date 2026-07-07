@@ -178,17 +178,32 @@
         requestSiteStepUpdate();
       }, delay);
     };
+    /* Doelen met data-site-snap-center willen exact het midden van de
+       viewport (de panorama-stage); overige doelen centreren in het
+       snap-venster onder de header. */
+    var siteCenterFor = function (target) {
+      return target.hasAttribute('data-site-snap-center')
+        ? window.innerHeight * .5
+        : siteSnapCenter();
+    };
     var siteTargetTop = function (target) {
       var styles = window.getComputedStyle(document.documentElement);
       var padTop = cssPx(styles.scrollPaddingTop);
       var snapH = window.innerHeight - padTop - cssPx(styles.scrollPaddingBottom);
       var rect = target.getBoundingClientRect();
+      /* dead center: mik op een geheel aantal pixels boven het doel, zodat de
+         parity-gesnapte Monitor-stage pixelscherp landt — de scrollpositie
+         zelf mag daarvoor fractioneel zijn */
+      if (target.hasAttribute('data-site-snap-center')) {
+        var desired = Math.round((window.innerHeight - rect.height) / 2);
+        return Math.max(0, Math.min(siteMaxScroll(), window.scrollY + rect.top - desired));
+      }
       /* doelen die hoger zijn dan het snap-venster (zoals de bento) lijnen we
          aan de bovenkant uit in plaats van te centreren */
       var delta = rect.height > snapH
         ? rect.top - padTop
-        : rect.top + rect.height * .5 - siteSnapCenter();
-      return Math.max(0, Math.min(siteMaxScroll(), window.scrollY + delta));
+        : rect.top + rect.height * .5 - siteCenterFor(target);
+      return Math.round(Math.max(0, Math.min(siteMaxScroll(), window.scrollY + delta)));
     };
     var siteTargetIndexOf = function (target) {
       for (var i = 0; i < siteTargets.length; i++) {
@@ -335,7 +350,7 @@
            daar scrolt de lezer gewoon open door */
         if (best.target.hasAttribute('data-site-snap-free')) { return; }
         rect = best.target.getBoundingClientRect();
-        delta = rect.top + rect.height * .5 - center;
+        delta = rect.top + rect.height * .5 - siteCenterFor(best.target);
         if (Math.abs(delta) < 12 || Math.abs(delta) > window.innerHeight * .9) { return; }
         centerSiteTarget(best.target, 'smooth');
       }, 120);
