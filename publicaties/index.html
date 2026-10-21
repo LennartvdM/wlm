@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+<!-- GEGENEREERD door scripts/build-publicaties.mjs uit publicaties/publicaties.json — niet met de hand bewerken. -->
 <html lang="nl">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Publicaties | Wilma Henderikse</title>
-  <meta name="description" content="Publicaties van Wilma Henderikse — maatschappelijk ondernemer, onderzoeker, auteur.">
+  <meta name="description" content="Publicaties van Wilma Henderikse, 2001–2025: monitors, rapporten, artikelen en handreikingen over gender, diversiteit, leeftijd en de combinatie van werk en zorg.">
   <link rel="canonical" href="https://wilmahenderikse.nl/publicaties/">
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
   <link rel="stylesheet" href="../assets/css/style.css">
@@ -17,10 +18,11 @@
 
 <header class="site-header">
   <div class="wrap">
-    <a class="wordmark" href="../">Wilma Henderikse<span class="dot">.</span></a>
+    <a class="wordmark" href="../"><span class="wordmark__mark" aria-hidden="true"></span>Wilma Henderikse</a>
     <nav class="site-nav" aria-label="Hoofdmenu">
       <a href="../#werk">Mijn werk</a>
       <a href="./" aria-current="page">Publicaties</a>
+      <a href="../#laatste-project">Monitor 2025</a>
       <a href="../#over">Over Wilma</a>
       <a href="../#contact">Contact</a>
     </nav>
@@ -30,82 +32,545 @@
 <main>
 
   <div class="page-head">
-    <div class="wrap">
-      <h1>Publicaties</h1>
+    <div class="wrap section__grid">
+      <p class="section__label">Publicaties</p>
+      <div class="section__body">
+        <h1 class="page-title">Publicaties</h1>
+        <p class="page-lede">Monitors, rapporten, artikelen en handreikingen over gender, diversiteit, leeftijd en de combinatie van werk en zorg, 2001–2025. Alle documenten zijn als PDF te openen en te downloaden.</p>
+      </div>
     </div>
   </div>
 
   <div class="pub-toolbar">
     <div class="wrap">
-      <input type="search" id="pub-filter" placeholder="Zoeken…" autocomplete="off" aria-label="Zoeken in publicaties">
+      <label class="search">
+        <span class="visually-hidden">Zoeken in publicaties</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="pub-filter" placeholder="Zoek op titel, auteur of jaar" autocomplete="off" aria-label="Zoeken in publicaties">
+      </label>
+
+      <div class="chips" role="group" aria-label="Thema">
+        <button type="button" class="chip is-active" data-theme="" aria-pressed="true">Alle thema’s</button>
+        <button type="button" class="chip" data-theme="top" aria-pressed="false">Vrouwen naar de top</button>
+        <button type="button" class="chip" data-theme="diversiteit" aria-pressed="false">Diversiteit &amp; inclusie</button>
+        <button type="button" class="chip" data-theme="leeftijd" aria-pressed="false">Leeftijd &amp; arbeid</button>
+        <button type="button" class="chip" data-theme="werkzorg" aria-pressed="false">Werk &amp; zorg</button>
+        <button type="button" class="chip" data-theme="beleid" aria-pressed="false">Emancipatiebeleid</button>
+      </div>
+
+      <div class="chips" role="group" aria-label="Soort publicatie">
+        <button type="button" class="chip is-active" data-type="" aria-pressed="true">Alle soorten</button>
+        <button type="button" class="chip" data-type="Monitor" aria-pressed="false">Monitor</button>
+        <button type="button" class="chip" data-type="Factsheet" aria-pressed="false">Factsheet</button>
+        <button type="button" class="chip" data-type="Rapport" aria-pressed="false">Rapport</button>
+        <button type="button" class="chip" data-type="Artikel" aria-pressed="false">Artikel</button>
+        <button type="button" class="chip" data-type="Handreiking" aria-pressed="false">Handreiking</button>
+      </div>
       <span class="result-count" aria-live="polite"></span>
     </div>
   </div>
 
   <section class="pub-section">
     <div class="wrap">
-      <ul class="pub-list">
-        <li><a href="pdf/101-vragen-over-vrouwen-en-techniek.pdf">101 vragen over vrouwen en techniek</a></li>
-        <li><a href="pdf/alle-troeven-in-handen.pdf">Alle troeven in handen, veelbelovende initiatieven voor emancipatie en participatie</a></li>
-        <li><a href="pdf/vrouwen-in-de-academische-top-umcs.pdf">Artikel vrouwen in de academische top UMC´s</a></li>
-        <li><a href="pdf/artsen-van-de-toekomst.pdf">Artsen van de toekomst, best practices in flexibele arrangementen</a></li>
-        <li><a href="pdf/benchmark-loopbaanontwikkeling-medisch-personeel.pdf">Benchmark loopbaanontwikkeling vrouwelijk-mannelijk medisch en medisch wetenschappelijk personeel</a></li>
-        <li><a href="pdf/monitor-talent-naar-de-top-2015.pdf">Charterbedrijven zetten de toon ambitie en commitment werken! Monitor Talent naar de top 2015</a></li>
-        <li><a href="pdf/monitor-talent-naar-de-top-2016.pdf">Daadkracht werkt!, Monitor Talent naar de top 2016</a></li>
-        <li><a href="pdf/monitor-talent-naar-de-top-2014.pdf">De aanhouder wint, Monitor Talent naar de top 2014</a></li>
-        <li><a href="pdf/dealing-with-an-ageing-labour-force.pdf">Dealing with an ageing labour force what do European employers expect and do</a></li>
-        <li><a href="pdf/diversiteit-en-kwaliteit-verbinden.pdf">Diversiteit en kwaliteit verbinden_VDH</a></li>
-        <li><a href="pdf/diversiteit-en-kwaliteit-literatuuronderzoek.pdf">Diversiteit en kwaliteit, Een literatuuronderzoek naar nieuwe bevindingen</a></li>
-        <li><a href="http://vandoornehuiskes.eu/wp-content/uploads/2017/08/Diversiteit-en-kwaliteit-een-uitdagende-relatie-Tijdschrift-voor-HRM.pdf" rel="noopener">Diversiteit en kwaliteit, een uitdagende relatie Tijdschrift voor HRM</a></li>
-        <li><a href="pdf/diversiteit-geinventariseerd.pdf">Diversiteit geïnventariseerd</a></li>
-        <li><a href="pdf/door-het-glazen-plafond.pdf">Door het glazen plafond, Naar effectieve maatregelen voor meer vrouwen in de top</a></li>
-        <li><a href="pdf/bedrijvenmonitor-2017.pdf">Een beetje beter maar nog lang niet voldoende, Bedrijvenmonitor 2017</a></li>
-        <li><a href="pdf/emancipatiegezindheid-van-leidinggevenden.pdf">Emancipatiegezindheid van leidinggevenden, In Emancipatiemonitor 2012</a></li>
-        <li><a href="pdf/gender-mainstreaming.pdf">Gender Mainstreaming an international analysis</a></li>
-        <li><a href="pdf/genderbewust-personeelsbeleid-bij-de-overheid.pdf">Genderbewust personeelsbeleid bij de overheid</a></li>
-        <li><a href="pdf/goede-voorbeelden-culturele-diversiteit.pdf">Goede voorbeelden culturele diversiteit en good principles toegepast in de praktijk</a></li>
-        <li><a href="pdf/monitor-talent-naar-de-top-2017.pdf">Het kan wel! Monitor Talent naar de Top 2017</a></li>
-        <li><a href="pdf/monitor-talent-naar-de-top-2020.pdf">Het verschil maken. Juist nu Monitor Talent naar de Top 2020</a></li>
-        <li><a href="pdf/monitor-talent-naar-de-top-2020-factsheet.pdf">Het verschil maken. Juist nu Factsheet Monitor Talent naar de Top 2020</a></li>
-        <li><a href="pdf/monitor-talent-naar-de-top-2012.pdf">Het zingt rond, Succes door aanbod en kwaliteit van vrouwen, Monitor Talent naar de top 2012</a></li>
-        <li><a href="pdf/highlights-female-career-app-2016-09.pdf">Highlights Female career App September 2016</a></li>
-        <li><a href="pdf/highlights-female-career-app-2017-01.pdf">Highlights Female career App Januari 2017</a></li>
-        <li><a href="pdf/highlights-female-career-app-2017-06.pdf">Highlights Female Career App Juni 2017</a></li>
-        <li><a href="http://vandoornehuiskes.eu/wp-content/uploads/2017/08/In-de-pas-of-uit-de-pas-Internationaal-vergelijkende-studie-emancipatie.pdf" rel="noopener">In de pas of uit de pas, Internationaal vergelijkende studie emancipatie</a></li>
-        <li><a href="pdf/literatuurverkenning-culturele-diversiteit.pdf">Literatuurverkenning culturele diversiteit</a></li>
-        <li><a href="pdf/monitor-lnvh-2017.pdf">Over onbenut talent en verloren productiviteit, Monitor LNVH 2017</a></li>
-        <li><a href="pdf/rijk-met-leeftijd.pdf">Rijk met Leeftijd, aan de slag met leeftijdsbewust beleid bij de rijksoverheid</a></li>
-        <li><a href="pdf/scherven-brengen-geluk.pdf">Scherven Brengen Geluk</a></li>
-        <li><a href="pdf/sleutels-tot-succes.pdf">Sleutels tot succes, hoe organisaties de deur naar de top voor vrouwen kunnen openen</a></li>
-        <li><a href="pdf/monitor-talent-naar-de-top-2013.pdf">Talent telt in de top, Monitor Talent naar de top 2013</a></li>
-        <li><a href="pdf/bedrijvenmonitor-2012-2015.pdf">Topvrouwen in de wachtkamer Bedrijvenmonitor 2012-2015</a></li>
-        <li><a href="pdf/bedrijvenmonitor-2012-2015-factsheet.pdf">Topvrouwen in de wachtkamer, Factsheet Bedrijvenmonitor 2012-2015</a></li>
-        <li><a href="pdf/bedrijvenmonitor-2013-factsheet.pdf">Waar een wil is, is een weg, Bedrijvenmonitor 2013</a></li>
-        <li><a href="pdf/bedrijvenmonitor-2016-factsheet.pdf">Waiting on the World to change”, Bedrijvenmonitor 2016, factsheet</a></li>
-        <li><a href="pdf/bedrijvenmonitor-2016.pdf">Waiting on the World to change”, Bedrijvenmonitor 2016</a></li>
-        <li><a href="pdf/werkboek-mentoring-meester-gezel.pdf">werkboek Mentoring Meester gezel</a></li>
-        <li><a href="pdf/werken-aan-gelijke-kansen-en-non-discriminatie.pdf">Werken aan gelijke kansen en non-discriminatie</a></li>
-        <li><a href="pdf/werkende-vaders.pdf">Werkende vaders, strategieën voor vaders die werk en zorg willen combineren</a></li>
-        <li><a href="pdf/werkgevers-en-deeltijd.pdf">Werkgevers en deeltijd, verdiepingsonderzoek voor SCP naar uitbreiding van de arbeidsduur van deeltijders</a></li>
-        <li><a href="pdf/working-and-ageing-cedefop.pdf">Working and ageing, Do European employers support longer working lives Cedefop</a></li>
+      <ul class="pub-list grid">
+      <li class="pub" data-year="2025" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2024.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2024.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2025</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Wie vooruit wil moet doortrappen, Monitor Talent naar de Top 2024</span>
+            <span class="pub__authors">Nel Verhoeven, Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 63 p. · 1,9 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2020" data-type="Factsheet" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2020-factsheet.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2020-factsheet.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2020</span><span aria-hidden="true">·</span><span>Factsheet</span></span>
+            <span class="pub__title">Het verschil maken. Juist nu Factsheet Monitor Talent naar de Top 2020</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 11 p. · 6,2 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2020" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2020.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2020.webp" width="480" height="680" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2020</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Het verschil maken. Juist nu Monitor Talent naar de Top 2020</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 100 p. · 3,7 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2018" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2017.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2017.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2018</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Het kan wel! Monitor Talent naar de Top 2017</span>
+            <span class="pub__authors">Babette Pouwels, Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 68 p. · 3,4 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2018" data-type="Rapport" data-themes="top">
+        <a class="pub__link" href="pdf/scherven-brengen-geluk.pdf">
+          <span class="cover"><img src="covers/scherven-brengen-geluk.webp" width="480" height="720" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2018</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Scherven Brengen Geluk</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 27 p. · 22,6 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2017" data-type="Artikel" data-themes="diversiteit">
+        <a class="pub__link" href="http://vandoornehuiskes.eu/wp-content/uploads/2017/08/Diversiteit-en-kwaliteit-een-uitdagende-relatie-Tijdschrift-voor-HRM.pdf" rel="noopener">
+          <span class="cover cover--set cover--diversiteit" aria-hidden="true"><span class="cover__type">Artikel</span><span class="cover__title">Diversiteit en kwaliteit, een uitdagende relatie Tijdschrift voor HRM</span><span class="cover__year">2017</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2017</span><span aria-hidden="true">·</span><span>Artikel</span></span>
+            <span class="pub__title">Diversiteit en kwaliteit, een uitdagende relatie Tijdschrift voor HRM</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↗</span>Externe link</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2017" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/bedrijvenmonitor-2017.pdf">
+          <span class="cover cover--set cover--top" aria-hidden="true"><span class="cover__type">Monitor</span><span class="cover__title">Een beetje beter maar nog lang niet voldoende, Bedrijvenmonitor 2017</span><span class="cover__year">2017</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2017</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Een beetje beter maar nog lang niet voldoende, Bedrijvenmonitor 2017</span>
+            <span class="pub__authors">Babette Pouwels, Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 138 p. · 1,6 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2017" data-type="Factsheet" data-themes="top">
+        <a class="pub__link" href="pdf/highlights-female-career-app-2017-01.pdf">
+          <span class="cover"><img src="covers/highlights-female-career-app-2017-01.webp" width="480" height="340" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2017</span><span aria-hidden="true">·</span><span>Factsheet</span></span>
+            <span class="pub__title">Highlights Female career App Januari 2017</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 1 p. · 71 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2017" data-type="Factsheet" data-themes="top">
+        <a class="pub__link" href="pdf/highlights-female-career-app-2017-06.pdf">
+          <span class="cover"><img src="covers/highlights-female-career-app-2017-06.webp" width="480" height="340" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2017</span><span aria-hidden="true">·</span><span>Factsheet</span></span>
+            <span class="pub__title">Highlights Female Career App Juni 2017</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 1 p. · 94 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2017" data-type="Rapport" data-themes="beleid">
+        <a class="pub__link" href="http://vandoornehuiskes.eu/wp-content/uploads/2017/08/In-de-pas-of-uit-de-pas-Internationaal-vergelijkende-studie-emancipatie.pdf" rel="noopener">
+          <span class="cover cover--set cover--beleid" aria-hidden="true"><span class="cover__type">Rapport</span><span class="cover__title">In de pas of uit de pas, Internationaal vergelijkende studie emancipatie</span><span class="cover__year">2017</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2017</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">In de pas of uit de pas, Internationaal vergelijkende studie emancipatie</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↗</span>Externe link</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2017" data-type="Rapport" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-lnvh-2017.pdf">
+          <span class="cover"><img src="covers/monitor-lnvh-2017.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2017</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Over onbenut talent en verloren productiviteit, Monitor LNVH 2017</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 13 p. · 3,7 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2016" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2016.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2016.webp" width="480" height="680" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2016</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Daadkracht werkt!, Monitor Talent naar de top 2016</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 71 p. · 3 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2016" data-type="Factsheet" data-themes="top">
+        <a class="pub__link" href="pdf/highlights-female-career-app-2016-09.pdf">
+          <span class="cover"><img src="covers/highlights-female-career-app-2016-09.webp" width="480" height="287" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2016</span><span aria-hidden="true">·</span><span>Factsheet</span></span>
+            <span class="pub__title">Highlights Female career App September 2016</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 1 p. · 156 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2016" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/bedrijvenmonitor-2016.pdf">
+          <span class="cover"><img src="covers/bedrijvenmonitor-2016.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2016</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Waiting on the World to change”, Bedrijvenmonitor 2016</span>
+            <span class="pub__authors">Wilma Henderikse, Babette Pouwels</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 5 p. · 370 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2016" data-type="Factsheet" data-themes="top">
+        <a class="pub__link" href="pdf/bedrijvenmonitor-2016-factsheet.pdf">
+          <span class="cover"><img src="covers/bedrijvenmonitor-2016-factsheet.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2016</span><span aria-hidden="true">·</span><span>Factsheet</span></span>
+            <span class="pub__title">Waiting on the World to change”, Bedrijvenmonitor 2016, factsheet</span>
+            <span class="pub__authors">Wilma Henderikse, Babette Pouwels</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 5 p. · 372 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2015" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2015.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2015.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2015</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Charterbedrijven zetten de toon ambitie en commitment werken! Monitor Talent naar de top 2015</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 75 p. · 1,7 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2015" data-type="Artikel" data-themes="top">
+        <a class="pub__link" href="pdf/door-het-glazen-plafond.pdf">
+          <span class="cover cover--set cover--top" aria-hidden="true"><span class="cover__type">Artikel</span><span class="cover__title">Door het glazen plafond, Naar effectieve maatregelen voor meer vrouwen in de top</span><span class="cover__year">2015</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2015</span><span aria-hidden="true">·</span><span>Artikel</span></span>
+            <span class="pub__title">Door het glazen plafond, Naar effectieve maatregelen voor meer vrouwen in de top</span>
+            <span class="pub__authors">Ans Merens, Wilma Henderikse, Babette Pouwels</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 26 p. · 979 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2015" data-type="Rapport" data-themes="diversiteit">
+        <a class="pub__link" href="pdf/goede-voorbeelden-culturele-diversiteit.pdf">
+          <span class="cover cover--set cover--diversiteit" aria-hidden="true"><span class="cover__type">Rapport</span><span class="cover__title">Goede voorbeelden culturele diversiteit en good principles toegepast in de praktijk</span><span class="cover__year">2015</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2015</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Goede voorbeelden culturele diversiteit en good principles toegepast in de praktijk</span>
+            <span class="pub__authors">Annemieke van Beek, Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 54 p. · 1,7 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2015" data-type="Rapport" data-themes="diversiteit">
+        <a class="pub__link" href="pdf/literatuurverkenning-culturele-diversiteit.pdf">
+          <span class="cover cover--set cover--diversiteit" aria-hidden="true"><span class="cover__type">Rapport</span><span class="cover__title">Literatuurverkenning culturele diversiteit</span><span class="cover__year">2015</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2015</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Literatuurverkenning culturele diversiteit</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 55 p. · 1,6 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2015" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/bedrijvenmonitor-2012-2015.pdf">
+          <span class="cover"><img src="covers/bedrijvenmonitor-2012-2015.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2015</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Topvrouwen in de wachtkamer Bedrijvenmonitor 2012-2015</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 173 p. · 2 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2015" data-type="Factsheet" data-themes="top">
+        <a class="pub__link" href="pdf/bedrijvenmonitor-2012-2015-factsheet.pdf">
+          <span class="cover"><img src="covers/bedrijvenmonitor-2012-2015-factsheet.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2015</span><span aria-hidden="true">·</span><span>Factsheet</span></span>
+            <span class="pub__title">Topvrouwen in de wachtkamer, Factsheet Bedrijvenmonitor 2012-2015</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 8 p. · 606 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2015" data-type="Rapport" data-themes="diversiteit">
+        <a class="pub__link" href="pdf/werken-aan-gelijke-kansen-en-non-discriminatie.pdf">
+          <span class="cover"><img src="covers/werken-aan-gelijke-kansen-en-non-discriminatie.webp" width="480" height="960" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2015</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Werken aan gelijke kansen en non-discriminatie</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 28 p. · 5,5 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2014" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2014.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2014.webp" width="480" height="699" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2014</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">De aanhouder wint, Monitor Talent naar de top 2014</span>
+            <span class="pub__authors">Babette Pouwels, Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 84 p. · 633 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2013" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2013.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2013.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2013</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Talent telt in de top, Monitor Talent naar de top 2013</span>
+            <span class="pub__authors">Babette Pouwels, Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 81 p. · 3,5 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2013" data-type="Factsheet" data-themes="top">
+        <a class="pub__link" href="pdf/bedrijvenmonitor-2013-factsheet.pdf">
+          <span class="cover"><img src="covers/bedrijvenmonitor-2013-factsheet.webp" width="480" height="621" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2013</span><span aria-hidden="true">·</span><span>Factsheet</span></span>
+            <span class="pub__title">Waar een wil is, is een weg, Bedrijvenmonitor 2013</span>
+            <span class="pub__authors">Wilma Henderikse, Babette Pouwels</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 3 p. · 873 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2012" data-type="Rapport" data-themes="diversiteit">
+        <a class="pub__link" href="pdf/diversiteit-en-kwaliteit-verbinden.pdf">
+          <span class="cover"><img src="covers/diversiteit-en-kwaliteit-verbinden.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2012</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Diversiteit en kwaliteit verbinden_VDH</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 32 p. · 420 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2012" data-type="Artikel" data-themes="beleid">
+        <a class="pub__link" href="pdf/emancipatiegezindheid-van-leidinggevenden.pdf">
+          <span class="cover cover--set cover--beleid" aria-hidden="true"><span class="cover__type">Artikel</span><span class="cover__title">Emancipatiegezindheid van leidinggevenden, In Emancipatiemonitor 2012</span><span class="cover__year">2012</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2012</span><span aria-hidden="true">·</span><span>Artikel</span></span>
+            <span class="pub__title">Emancipatiegezindheid van leidinggevenden, In Emancipatiemonitor 2012</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 204 p. · 989 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2012" data-type="Monitor" data-themes="top">
+        <a class="pub__link" href="pdf/monitor-talent-naar-de-top-2012.pdf">
+          <span class="cover"><img src="covers/monitor-talent-naar-de-top-2012.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2012</span><span aria-hidden="true">·</span><span>Monitor</span></span>
+            <span class="pub__title">Het zingt rond, Succes door aanbod en kwaliteit van vrouwen, Monitor Talent naar de top 2012</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 83 p. · 1,3 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2011" data-type="Rapport" data-themes="diversiteit">
+        <a class="pub__link" href="pdf/diversiteit-en-kwaliteit-literatuuronderzoek.pdf">
+          <span class="cover cover--set cover--diversiteit" aria-hidden="true"><span class="cover__type">Rapport</span><span class="cover__title">Diversiteit en kwaliteit, Een literatuuronderzoek naar nieuwe bevindingen</span><span class="cover__year">2011</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2011</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Diversiteit en kwaliteit, Een literatuuronderzoek naar nieuwe bevindingen</span>
+            <span class="pub__authors">Annemieke van Beek, Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 39 p. · 731 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2011" data-type="Handreiking" data-themes="leeftijd">
+        <a class="pub__link" href="pdf/rijk-met-leeftijd.pdf">
+          <span class="cover"><img src="covers/rijk-met-leeftijd.webp" width="480" height="338" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2011</span><span aria-hidden="true">·</span><span>Handreiking</span></span>
+            <span class="pub__title">Rijk met Leeftijd, aan de slag met leeftijdsbewust beleid bij de rijksoverheid</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 66 p. · 809 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2011" data-type="Artikel" data-themes="leeftijd">
+        <a class="pub__link" href="pdf/working-and-ageing-cedefop.pdf">
+          <span class="cover"><img src="covers/working-and-ageing-cedefop.webp" width="480" height="661" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2011</span><span aria-hidden="true">·</span><span>Artikel</span></span>
+            <span class="pub__title">Working and ageing, Do European employers support longer working lives Cedefop</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 298 p. · 3,8 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2010" data-type="Rapport" data-themes="werkzorg">
+        <a class="pub__link" href="pdf/werkende-vaders.pdf">
+          <span class="cover"><img src="covers/werkende-vaders.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2010</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Werkende vaders, strategieën voor vaders die werk en zorg willen combineren</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 92 p. · 1,5 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2009" data-type="Rapport" data-themes="werkzorg">
+        <a class="pub__link" href="pdf/werkgevers-en-deeltijd.pdf">
+          <span class="cover cover--set cover--werkzorg" aria-hidden="true"><span class="cover__type">Rapport</span><span class="cover__title">Werkgevers en deeltijd, verdiepingsonderzoek voor SCP naar uitbreiding van de arbeidsduur van deeltijders</span><span class="cover__year">2009</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2009</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Werkgevers en deeltijd, verdiepingsonderzoek voor SCP naar uitbreiding van de arbeidsduur van deeltijders</span>
+            <span class="pub__authors">Wilma Henderikse, Annemieke van Beek, Cora de Olde</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 103 p. · 727 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2008" data-type="Rapport" data-themes="beleid">
+        <a class="pub__link" href="pdf/alle-troeven-in-handen.pdf">
+          <span class="cover"><img src="covers/alle-troeven-in-handen.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2008</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Alle troeven in handen, veelbelovende initiatieven voor emancipatie en participatie</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 2 p. · 444 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2008" data-type="Artikel" data-themes="top">
+        <a class="pub__link" href="pdf/vrouwen-in-de-academische-top-umcs.pdf">
+          <span class="cover"><img src="covers/vrouwen-in-de-academische-top-umcs.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2008</span><span aria-hidden="true">·</span><span>Artikel</span></span>
+            <span class="pub__title">Artikel vrouwen in de academische top UMC´s</span>
+            <span class="pub__authors">Anneke van Doorne-Huiskes, Annemieke van Beek</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 16 p. · 1,2 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2008" data-type="Rapport" data-themes="top">
+        <a class="pub__link" href="pdf/benchmark-loopbaanontwikkeling-medisch-personeel.pdf">
+          <span class="cover"><img src="covers/benchmark-loopbaanontwikkeling-medisch-personeel.webp" width="480" height="678" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2008</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Benchmark loopbaanontwikkeling vrouwelijk-mannelijk medisch en medisch wetenschappelijk personeel</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 31 p. · 593 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2008" data-type="Handreiking" data-themes="leeftijd">
+        <a class="pub__link" href="pdf/werkboek-mentoring-meester-gezel.pdf">
+          <span class="cover"><img src="covers/werkboek-mentoring-meester-gezel.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2008</span><span aria-hidden="true">·</span><span>Handreiking</span></span>
+            <span class="pub__title">werkboek Mentoring Meester gezel</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 60 p. · 590 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2007" data-type="Rapport" data-themes="werkzorg">
+        <a class="pub__link" href="pdf/artsen-van-de-toekomst.pdf">
+          <span class="cover"><img src="covers/artsen-van-de-toekomst.webp" width="480" height="640" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2007</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Artsen van de toekomst, best practices in flexibele arrangementen</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 20 p. · 826 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2007" data-type="Rapport" data-themes="diversiteit">
+        <a class="pub__link" href="pdf/diversiteit-geinventariseerd.pdf">
+          <span class="cover cover--set cover--diversiteit" aria-hidden="true"><span class="cover__type">Rapport</span><span class="cover__title">Diversiteit geïnventariseerd</span><span class="cover__year">2007</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2007</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Diversiteit geïnventariseerd</span>
+            <span class="pub__authors">Wilma Henderikse, Anneke van Doorne-Huiskes</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 121 p. · 2,4 MB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2006" data-type="Rapport" data-themes="leeftijd">
+        <a class="pub__link" href="pdf/dealing-with-an-ageing-labour-force.pdf">
+          <span class="cover"><img src="covers/dealing-with-an-ageing-labour-force.webp" width="480" height="700" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2006</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Dealing with an ageing labour force what do European employers expect and do</span>
+            <span class="pub__authors">Harry van Dalen, Kène Henkens, Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 63 p. · 655 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2006" data-type="Rapport" data-themes="beleid">
+        <a class="pub__link" href="pdf/gender-mainstreaming.pdf">
+          <span class="cover cover--set cover--beleid" aria-hidden="true"><span class="cover__type">Rapport</span><span class="cover__title">Gender Mainstreaming an international analysis</span><span class="cover__year">2006</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2006</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Gender Mainstreaming an international analysis</span>
+            <span class="pub__authors">Anneke van Doorne-Huiskes, Wilma Henderikse, Wieteke Conen</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 47 p. · 378 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2004" data-type="Rapport" data-themes="top">
+        <a class="pub__link" href="pdf/sleutels-tot-succes.pdf">
+          <span class="cover"><img src="covers/sleutels-tot-succes.webp" width="480" height="679" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2004</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Sleutels tot succes, hoe organisaties de deur naar de top voor vrouwen kunnen openen</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 59 p. · 866 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2003" data-type="Rapport" data-themes="beleid">
+        <a class="pub__link" href="pdf/genderbewust-personeelsbeleid-bij-de-overheid.pdf">
+          <span class="cover cover--set cover--beleid" aria-hidden="true"><span class="cover__type">Rapport</span><span class="cover__title">Genderbewust personeelsbeleid bij de overheid</span><span class="cover__year">2003</span></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2003</span><span aria-hidden="true">·</span><span>Rapport</span></span>
+            <span class="pub__title">Genderbewust personeelsbeleid bij de overheid</span>
+            <span class="pub__authors">Wilma Henderikse</span>
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 85 p. · 484 kB</span>
+          </span>
+        </a>
+      </li>
+      <li class="pub" data-year="2001" data-type="Handreiking" data-themes="beleid">
+        <a class="pub__link" href="pdf/101-vragen-over-vrouwen-en-techniek.pdf">
+          <span class="cover"><img src="covers/101-vragen-over-vrouwen-en-techniek.webp" width="480" height="654" alt="" loading="lazy" decoding="async"></span>
+          <span class="pub__body">
+            <span class="pub__kicker"><span>2001</span><span aria-hidden="true">·</span><span>Handreiking</span></span>
+            <span class="pub__title">101 vragen over vrouwen en techniek</span>
+            
+            <span class="pub__facts"><span class="pub__download" aria-hidden="true">↓</span>PDF · 30 p. · 1,3 MB</span>
+          </span>
+        </a>
+      </li>
       </ul>
     </div>
   </section>
 
   <div class="wrap no-results">
-    <p>Geen resultaten.</p>
-  </div>
-
-  <div class="wrap back-home">
-    <a class="btn ghost" href="../">Home</a>
+    <p>Geen publicaties gevonden. Probeer een andere zoekterm of thema.</p>
   </div>
 
 </main>
 
 <footer class="site-footer">
   <div class="wrap">
-    <span>© <span id="jaar">2026</span> Wilma Henderikse</span>
-    <span><a href="https://www.researchgate.net/profile/Wilma_Henderikse" rel="noopener">ResearchGate</a></span>
+    <span class="site-footer__name">© <span id="jaar">2026</span> Wilma Henderikse</span>
+    <span class="site-footer__links"><a href="../#laatste-project">Monitor Talent naar de Top 2025</a> · <a href="https://www.researchgate.net/profile/Wilma_Henderikse" rel="noopener">ResearchGate</a></span>
   </div>
 </footer>
 

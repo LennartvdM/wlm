@@ -365,15 +365,9 @@
       // centre the oversized canvas on the mount; let its feather overflow without blocking the tooltip
       var content = el.querySelector('.konvajs-content');
       if (content) {
-        var mountRect = el.getBoundingClientRect();
-        var rawLeft = (size - stageSize) / 2;
-        var rawTop = (size - stageSize) / 2;
         content.style.position = 'absolute';
-        content.style.left = (Math.round(mountRect.left + rawLeft) - mountRect.left) + 'px';
-        content.style.top = (Math.round(mountRect.top + rawTop) - mountRect.top) + 'px';
-        content.style.transform = 'none';
-        content.style.width = stageSize + 'px';
-        content.style.height = stageSize + 'px';
+        content.style.left = '50%'; content.style.top = '50%';
+        content.style.transform = 'translate(-50%, -50%)';
         content.style.pointerEvents = 'none';
       }
       el.style.position = 'relative';
@@ -937,7 +931,8 @@
       else show(z, e.clientX, e.clientY);
     });
     var dismiss = function () { hide(); };
-    window.addEventListener('scroll', dismiss, { passive: true });
+    if (window.FactsheetMotion) window.FactsheetMotion.onScroll(dismiss);   // c259 · the deck's one scroll clock
+    else window.addEventListener('scroll', dismiss, { passive: true });
     window.addEventListener('resize', dismiss);
     // Dismiss a held hover when the BEAT changes. The chart re-renders under a stationary cursor as you
     // scroll between beats, but the deck's scroll engine doesn't emit a window 'scroll', so the tier
@@ -950,16 +945,10 @@
   }
 
   function wireWhenReady(el) {
-    if (el.__cirkelGuideWired) return;
     var tries = 0;
     (function ready() {
       var api = el.__cirkel;
-      if (api && typeof api.cfg === 'function' && api.cfg()) {
-        if (el.__cirkelGuideWired) return;
-        el.__cirkelGuideWired = true;
-        wire(el, api);
-        return;
-      }
+      if (api && typeof api.cfg === 'function' && api.cfg()) { wire(el, api); return; }
       if (tries++ < 600) requestAnimationFrame(ready);
     })();
   }

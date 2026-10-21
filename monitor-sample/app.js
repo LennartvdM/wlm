@@ -1,8 +1,85 @@
+// ── c259 · ONE MOTION VOCABULARY ── the curves, durations and stagger live as tokens in base.css
+// (:root --ease-arrive/-depart/-move, --dur-1/2/3, --stagger, --stagger-cap). Script-driven motion
+// (the pager curve, the reveal stagger) reads them here, so script and stylesheet can't drift apart.
+window.FactsheetMotion = (function(){
+  var cs = null;
+  function token(name){
+    try{ cs = cs || getComputedStyle(document.documentElement); return cs.getPropertyValue(name).trim(); }
+    catch(e){ return ''; }
+  }
+  function ms(name, fallback){
+    var v = token(name), n = parseFloat(v);
+    return isFinite(n) ? (/ms$/.test(v) ? n : n * 1000) : fallback;
+  }
+  // CSS cubic-bezier(x1,y1,x2,y2) as a function of progress p∈[0,1] (Newton, bisection fallback)
+  function cubicBezier(x1, y1, x2, y2){
+    var cx = 3*x1, bx = 3*(x2-x1) - cx, ax = 1 - cx - bx, cy = 3*y1, by = 3*(y2-y1) - cy, ay = 1 - cy - by;
+    function X(t){ return ((ax*t + bx)*t + cx)*t; }
+    function Y(t){ return ((ay*t + by)*t + cy)*t; }
+    return function(p){
+      if (p <= 0) return 0; if (p >= 1) return 1;
+      var t = p, i, d;
+      for (i = 0; i < 8; i++){
+        d = (3*ax*t + 2*bx)*t + cx; if (Math.abs(d) < 1e-6) break;
+        var t2 = t - (X(t) - p) / d; if (t2 < 0 || t2 > 1) break; t = t2;
+        if (Math.abs(X(t) - p) < 1e-5) return Y(t);
+      }
+      var lo = 0, hi = 1; t = p;
+      for (i = 0; i < 30; i++){ if (X(t) < p) lo = t; else hi = t; t = (lo + hi) / 2; }
+      return Y(t);
+    };
+  }
+  function curve(name, fallback){
+    var m = /cubic-bezier\(([^)]+)\)/.exec(token(name)), q = m ? m[1].split(',').map(parseFloat) : fallback;
+    if (!q || q.length !== 4 || q.some(isNaN)) q = fallback;
+    return cubicBezier(q[0], q[1], q[2], q[3]);
+  }
+  // ONE SCROLL CLOCK. Everything that follows the scroll position subscribes here instead of adding
+  // its own window 'scroll' listener (there were 22 at runtime): one passive listener, one rAF pass per
+  // scrolled frame, subscribers in subscription order. Scroll events already arrive once per frame,
+  // just before that frame's rAF callbacks, so nothing runs later than before — and since the pass runs
+  // after the pager has set this frame's scroll position, every subscriber reads the position that is
+  // actually painted. A throwing subscriber is reported (rethrown async) without stopping the others.
+  var subs = [], queued = false;
+  function tick(ts){
+    queued = false;
+    for (var i = 0; i < subs.length; i++){
+      try{ subs[i](ts); }catch(e){ setTimeout(function(){ throw e; }, 0); }
+    }
+  }
+  function onScroll(fn){
+    if (!subs.length) window.addEventListener('scroll', function(){
+      if (!queued){ queued = true; requestAnimationFrame(tick); }
+    }, { passive:true });
+    subs.push(fn);
+  }
+  return {
+    token: token, ms: ms, curve: curve, cubicBezier: cubicBezier, onScroll: onScroll,
+    out: function(name, fallback){ var x = parseFloat(token('--exit')); return ms(name, fallback) * (isFinite(x) ? x : .65); },   // a departure's length
+    stagger: function(i){ return Math.min(i * ms('--stagger', 70), ms('--stagger-cap', 420)); },
+    staggerCap: function(){ return ms('--stagger-cap', 420); }
+  };
+})();
+
 (function(){
   // Enable the hidden-first animated mode ONLY if we can animate safely.
   // If anything below throws or the observer never fires, content stays visible.
   var ANIM = 'IntersectionObserver' in window;
   if(ANIM){ document.documentElement.classList.add('js-anim'); }
+
+  // c258 · keep a quote's last word and its closing mark together, so a lone ” can never wrap onto
+  // a line of its own (overlay, inline ≤820 quote and the phone frame all read the same markup).
+  try{
+    [].forEach.call(document.querySelectorAll('.quote-copy .quote-close'), function(cl){
+      var t = cl.previousSibling;
+      if(!t || t.nodeType !== 3) return;
+      var m = t.nodeValue.match(/(\S+)\s*$/); if(!m) return;
+      t.nodeValue = t.nodeValue.slice(0, m.index);
+      var w = document.createElement('span'); w.className = 'q-tail';
+      w.appendChild(document.createTextNode(m[1]));
+      cl.parentNode.insertBefore(w, cl); w.appendChild(cl);
+    });
+  }catch(e){}
 
   // Hard safety net: no matter what, reveal everything after 1.2s so the page
   // can never be left blank by a stalled observer or a JS error.
@@ -61,7 +138,8 @@
         es.forEach(function(e){ if(e.isIntersecting){
           var host=e.target; var items=[].slice.call(host.querySelectorAll('.rise'));
           items.sort(function(a,b){return (+a.dataset.at)-(+b.dataset.at);});
-          items.forEach(function(el){ var at=+el.dataset.at||0; setTimeout(function(){el.classList.add('on');}, at*110); });
+          // c259 · the shared stagger: one --stagger step per group, never beyond --stagger-cap
+          items.forEach(function(el){ var at=+el.dataset.at||0; setTimeout(function(){el.classList.add('on');}, FactsheetMotion.stagger(at)); });
           io.unobserve(host);
         }});
       },{threshold:.2});
@@ -76,29 +154,88 @@
            s2:['81','%','75 van de 93 organisaties — 81% respons'],
            s3:['81','75 van de 93 gevraagde organisaties vulden de tool in',true]},
   };
-  var QUOTE_SPOTS = ['qspot-a','qspot-b','qspot-c','qspot-d','qspot-e'];
-  var quoteSpotDeck = [], quoteSpotByScene = {}, lastQuoteSpot = '';
-  function refillQuoteSpotDeck(){
-    quoteSpotDeck = QUOTE_SPOTS.slice();
-    for(var i=quoteSpotDeck.length-1;i>0;i--){
-      var j = Math.floor(Math.random() * (i + 1));
-      var t = quoteSpotDeck[i]; quoteSpotDeck[i] = quoteSpotDeck[j]; quoteSpotDeck[j] = t;
+  // c258 · ANCHORED, FITTED quote overlay. (Replaces five random viewport "spots" in vw/vh clamps,
+  // which ignored where the centred content actually is — on wide screens a quote landed on the
+  // sidebar — and sized every quote by viewport width instead of by what fits.) Now:
+  //  · the quote lives inside its section's own content frame (text column + figure), so it can
+  //    never reach the sidebar and stays in the composition at any width;
+  //  · it stands on the side the markup declares (data-enter="left|right") — deterministic;
+  //  · its type is the largest size that fits the room left under the pinned chapter header, its
+  //    measure 15–24em by length, its lines balanced, and its box shrink-wrapped to the widest line so the
+  //    source sits under the text, not out at the far edge.
+  function placeQuote(layer, sec, side){
+    var sw = layer.querySelector('.quote-sweep'), copy = layer.querySelector('.quote-copy');
+    if(!sw || !copy) return;
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var host = sec.querySelector('.scrolly') || sec.querySelector('.read-frame') || sec;
+    var fr = host.getBoundingClientRect();
+    var L = Math.max(fr.left, 20), R = Math.min(fr.right, vw - 20), FW = Math.max(260, R - L);
+    var TOP = 96, BOT = vh - 32, room = (BOT - TOP) * .86;
+    var kick = layer.querySelector('.quote-kicker'), kw = kick ? kick.scrollWidth : 0;
+    // the measure grows with the voice: a one-liner stays compact (~15em), a long, multi-sentence
+    // one gets wider lines (up to ~24em) instead of becoming a tall narrow column
+    var em = Math.max(15, Math.min(24, 9 + (copy.textContent || '').length / 12));
+    var fs = Math.min(46, Math.max(22, FW * .046), vh * .058), fsMin = 18, W = 0, h = 0;
+    for(var i = 0; i < 18; i++){
+      W = Math.max(kw, Math.min(FW * .86, fs * em));
+      layer.style.setProperty('--quote-fs', fs.toFixed(1) + 'px');
+      layer.style.setProperty('--quote-w', Math.round(W) + 'px');
+      h = sw.offsetHeight;
+      if(h <= room || fs <= fsMin) break;
+      fs = Math.max(fsMin, fs * .93);
     }
-    if(lastQuoteSpot && quoteSpotDeck.length > 1 && quoteSpotDeck[quoteSpotDeck.length-1] === lastQuoteSpot){
-      var swap = quoteSpotDeck[0];
-      quoteSpotDeck[0] = quoteSpotDeck[quoteSpotDeck.length-1];
-      quoteSpotDeck[quoteSpotDeck.length-1] = swap;
-    }
+    try{                                   // shrink-wrap to the widest (balanced) line
+      var rg = document.createRange(); rg.selectNodeContents(copy);
+      var rs = rg.getClientRects(), cr = copy.getBoundingClientRect(), far = 0;
+      for(var k = 0; k < rs.length; k++) if(rs[k].width > 1) far = Math.max(far, rs[k].right - cr.left);
+      if(far > 0 && far + 2 < W){ W = Math.max(kw, Math.ceil(far + 2)); layer.style.setProperty('--quote-w', W + 'px'); h = sw.offsetHeight; }
+    }catch(e){}
+    var inset = FW * .06;
+    var x = side === 'right' ? R - inset - W : L + inset;
+    x = Math.max(L, Math.min(x, R - W));
+    var y = Math.max(TOP + h / 2, Math.min(vh * .5, BOT - h / 2));
+    layer.style.setProperty('--quote-x', Math.round(x) + 'px');
+    layer.style.setProperty('--quote-y', Math.round(y) + 'px');
   }
-  function quoteSpotFor(key){
-    key = key || 'quote';
-    if(quoteSpotByScene[key]) return quoteSpotByScene[key];
-    if(!quoteSpotDeck.length) refillQuoteSpotDeck();
-    var spot = quoteSpotDeck.pop();
-    quoteSpotByScene[key] = spot;
-    lastQuoteSpot = spot;
-    return spot;
+  function quoteSide(step){ return step && step.dataset.enter === 'right' ? 'right' : 'left'; }
+  // c265 · QUOTE REHEARSAL. The first quote overlay of a visit stuttered: the browser met the large
+  // italic serif, the blurred, drifting text layer and those glyphs for the first time WHILE animating
+  // them (its text raster alone cost twice what later quotes cost). So once, early and out of sight,
+  // the first quote plays its whole entrance at 0.4% opacity — same font, size, blur and drift — and the
+  // real one finds all of it ready. In idle time after load (fonts first), or on the beat before a quote
+  // when the reader gets there sooner. Desktop overlay only; reduced motion has no entrance to warm.
+  var quoteWarm = false;
+  function warmQuotes(){
+    if (quoteWarm) return;
+    quoteWarm = true;
+    try{
+      var mm = window.matchMedia;
+      if (mm && (mm('(max-width: 820px)').matches || mm('(prefers-reduced-motion: reduce)').matches)) return;
+      var src = document.querySelector('.quote-step[data-phase="enter"] .quote-sweep');
+      if (!src) return;
+      var step = src.closest('.quote-step'), sec = step.closest('.page') || document.body, side = quoteSide(step);
+      var fonts = (document.fonts && document.fonts.load) ? Promise.all([
+        document.fonts.load('italic 400 40px "Libre Baskerville"'),
+        document.fonts.load('400 13px Inter'), document.fonts.load('600 11px Inter')
+      ]).catch(function(){}) : Promise.resolve();
+      fonts.then(function(){ requestAnimationFrame(function(){
+        var w = document.createElement('div');
+        w.className = 'quote-layer quote-warm enter qside-' + side;
+        w.setAttribute('aria-hidden', 'true');
+        w.innerHTML = src.outerHTML;
+        document.body.appendChild(w);
+        placeQuote(w, sec, side);
+        void w.offsetWidth;
+        w.classList.add('is-active');
+        setTimeout(function(){ if (w.parentNode) w.parentNode.removeChild(w); }, 1500);   // > the .82s entrance + the .92s meta
+      }); });
+    }catch(e){}
   }
+  (function(){
+    function kick(){ (window.requestIdleCallback || function(f){ setTimeout(f, 200); })(warmQuotes, { timeout: 2500 }); }
+    if (document.readyState === 'complete') setTimeout(kick, 1200);
+    else window.addEventListener('load', function(){ setTimeout(kick, 1200); }, { once: true });
+  })();
   function setupReading(sec){
     const sid=sec.id;
     const acts=[...sec.querySelectorAll('.act')];
@@ -130,31 +267,11 @@
         layer.innerHTML='';
         delete layer.dataset.owner;
         delete layer.dataset.quoteScene;
-        delete layer.dataset.quoteSpot;
-        delete layer.dataset.quoteFit;
+        delete layer.dataset.quoteSide;
       }
       var callbacks = quoteExitCallbacks.slice();
       quoteExitCallbacks = [];
       callbacks.forEach(function(fn){ if(fn)fn(); });
-    }
-    function fitQuoteLayer(layer){
-      if(!layer)return;
-      layer.classList.remove('quote-wide','quote-xwide');
-      layer.dataset.quoteFit = '';
-      var q = layer.querySelector('.quote-copy');
-      if(!q)return;
-      function lines(){
-        var cs = getComputedStyle(q);
-        var lh = parseFloat(cs.lineHeight) || (parseFloat(cs.fontSize) * 1.24) || 42;
-        return q.getBoundingClientRect().height / lh;
-      }
-      // First measure the normal spot width. If it reads as a narrow stack, give it more
-      // horizontal room; measure again so only truly long/tall quotes get the extra-wide lane.
-      if(lines() > 4.7) layer.classList.add('quote-wide');
-      if(lines() > 5.8) layer.classList.add('quote-xwide');
-      layer.dataset.quoteFit = ['quote-wide','quote-xwide'].filter(function(c){
-        return layer.classList.contains(c);
-      }).join(' ');
     }
     function showQuoteLayer(src){
       if(!src)return;
@@ -166,16 +283,17 @@
         layer.innerHTML=src.outerHTML;
         layer.dataset.quoteScene=key||'';
       }
-      var spot = quoteSpotFor(key);
-      layer.className='quote-layer enter from-left '+spot;
+      var side = quoteSide(step);
+      layer.className='quote-layer enter qside-'+side;
       layer.dataset.owner=sid;
-      layer.dataset.quoteSpot=spot;
-      fitQuoteLayer(layer);
+      layer.dataset.quoteSide=side;
+      placeQuote(layer, sec, side);
       void layer.offsetWidth;
       layer.classList.add('is-active');
     }
     function primeQuoteLayer(src){
       if(!src)return false;
+      warmQuotes();                                  // c265 · the reader got here before idle time did
       var layer=quoteLayer();
       var step=src.closest&&src.closest('.quote-step');
       var key=step&&step.dataset.scene;
@@ -183,11 +301,11 @@
         layer.innerHTML=src.outerHTML;
         layer.dataset.quoteScene=key||'';
       }
-      var spot = quoteSpotFor(key);
-      layer.className='quote-layer primed from-left '+spot;
+      var side = quoteSide(step);
+      layer.className='quote-layer primed qside-'+side;
       layer.dataset.owner=sid;
-      layer.dataset.quoteSpot=spot;
-      fitQuoteLayer(layer);
+      layer.dataset.quoteSide=side;
+      placeQuote(layer, sec, side);
       return true;
     }
     function primeQuoteForSource(act){
@@ -208,8 +326,7 @@
         layer.innerHTML='';
         delete layer.dataset.owner;
         delete layer.dataset.quoteScene;
-        delete layer.dataset.quoteSpot;
-        delete layer.dataset.quoteFit;
+        delete layer.dataset.quoteSide;
       }
     }
     function exitQuoteLayer(done){
@@ -224,9 +341,7 @@
       }
       clearQuoteTimer();
       if(done)quoteExitCallbacks.push(done);
-      var spot = layer.dataset.quoteSpot || '';
-      var fit = layer.dataset.quoteFit || '';
-      layer.className=('quote-layer exit fade-out '+spot+' '+fit).trim();
+      layer.className='quote-layer exit fade-out qside-'+(layer.dataset.quoteSide||'left');
       void layer.offsetWidth;
       layer.classList.add('is-active');
       quoteClearTimer=setTimeout(function(){
@@ -317,7 +432,11 @@
       }
       activate(beat.dataset.scene);
     });
-    window.addEventListener('scroll',onScroll,{passive:true});
+    FactsheetMotion.onScroll(onScroll);
+    window.addEventListener('resize',function(){
+      var l=document.getElementById('quote-layer');
+      if(l&&l.dataset.owner===sid&&l.innerHTML) placeQuote(l, sec, l.dataset.quoteSide||'left');
+    });
     activate(acts[0].dataset.scene); onScroll();
   }
   document.querySelectorAll('.read-frame, .scrolly').forEach(f=>setupReading(f.closest('.page')));
@@ -374,7 +493,7 @@
     dwrap.classList.toggle('show', window.scrollY>window.innerHeight*0.6);
     VoidDeck.show(voidForIdx(idx));   // c145: crossfade the void to the section in view
   }
-  window.addEventListener('scroll',navScroll,{passive:true});
+  FactsheetMotion.onScroll(navScroll);
   window.addEventListener('resize',navScroll); navScroll();
 
   // ── c144: the real c136 sidebar markup. data-page is the visible number;
@@ -387,7 +506,7 @@
     var idx = activeSection(sbSecs);
     sbItems.forEach(function(li,i){ li.classList.toggle('active',i===idx); });
   }
-  if(sbItems.length){ window.addEventListener('scroll',sbScroll,{passive:true}); window.addEventListener('resize',sbScroll); sbScroll(); }
+  if(sbItems.length){ FactsheetMotion.onScroll(sbScroll); window.addEventListener('resize',sbScroll); sbScroll(); }
 
     // everything wired up fine — let the observer/scene logic drive reveals.
     // (safety timer still fires harmlessly; .on is idempotent.)
@@ -516,24 +635,36 @@
         window.dispatchEvent(new CustomEvent('factsheet:section-handoff',{detail:d}));
       }catch(e){}
     }
+    // c259 · the pager speaks the deck's MOVE curve (--ease-move in base.css, read once): ease-out-biased,
+    // so the page answers the gesture at once (≈20% of the way at 20% of the time — easeInOutCubic
+    // barely left the spot for the first 100ms) and spends its time on a long, soft landing.
+    var moveCurve = FactsheetMotion.curve('--ease-move', [.33, 0, .2, 1]);
+    // c259 · ambient motion (logo silhouettes, photo Ken Burns) holds still while the page eases —
+    // one thing moves at a time — and resumes when it lands (listeners: AmbientHold, PhotoDrift).
+    var pagingOn = false;
+    function paging(on){
+      if (on === pagingOn) return; pagingOn = on;
+      try{ window.dispatchEvent(new CustomEvent('factsheet:paging', { detail:{ on:on } })); }catch(e){}
+    }
     function easeTo(target, done, opts){
       var start = window.scrollY, dist = target - start;
       if (Math.abs(dist) < 2){ if(done)done(); armTail(); return; }
       if (reduce){ setY(target); if(done)done(); armTail(); return; }
-      animating = true;
+      animating = true; paging(true);
       handoffEaseActive = !!(opts && opts.sectionHandoff && dist > 0);
       if(handoffEaseActive) dispatchSectionHandoff('start',{start:start,target:target,dist:dist});
-      // c183 · only a handful of beats per section, so each transition is precious —
-      // make the slide noticeably slower and gentler (was 300–680ms).
-      var fast = opts && opts.quoteSectionHandoff;
+      // c259 · duration grows with the square root of the distance (a long hop is not
+      // proportionally slower), capped at 850ms: a beat (~575px) ≈565ms, a section handoff
+      // (~1240px) ≈760ms. The quote handoff (after its own exit fade) stays quicker.
+      var fast = opts && opts.quoteSectionHandoff, ad = Math.sqrt(Math.abs(dist));
       var t0 = 0, dur = fast
-        ? Math.min(720, Math.max(460, Math.abs(dist) * 0.48))
-        : Math.min(1150, Math.max(540, Math.abs(dist) * 0.95));
+        ? Math.min(650, Math.max(380, 150 + 13 * ad))
+        : Math.min(850, Math.max(420, 160 + 17 * ad));
       function frame(ts){
         if (!animating) return;
         if (!t0) t0 = ts;
         var p = (ts - t0) / dur; if (p > 1) p = 1;
-        var e = p < 0.5 ? 4*p*p*p : 1 - Math.pow(-2*p+2, 3)/2;   // easeInOutCubic — gentle in and out
+        var e = p < 1 ? moveCurve(p) : 1;
         var y = start + dist * e;
         setY(y);
         if(handoffEaseActive) dispatchSectionHandoff('update',{progress:p,eased:e,offsetY:start-y,scrollY:y,start:start,target:target,dist:dist});
@@ -541,7 +672,7 @@
         else {
           if(handoffEaseActive) dispatchSectionHandoff('end',{progress:1,eased:1,offsetY:start-target,scrollY:target,start:start,target:target,dist:dist});
           handoffEaseActive = false;
-          animating = false; raf = 0; if(done)done(); armTail();
+          animating = false; raf = 0; paging(false); if(done)done(); armTail();
         }
       }
       raf = requestAnimationFrame(frame);
@@ -551,7 +682,7 @@
       raf = 0;
       if(handoffEaseActive) dispatchSectionHandoff('cancel',{offsetY:0});
       handoffEaseActive = false;
-      animating = false;
+      animating = false; paging(false);
     }
     function dispatchBeat(el,i,mode){
       try{ window.dispatchEvent(new CustomEvent('factsheet:beat',{detail:{el:el,index:i,mode:mode||'beat'}})); }catch(e){}
@@ -667,6 +798,15 @@
       return null;
     }
     function step(dir){
+      // ── the HERO above the first beat (mast + corner links) is a legitimate resting
+      // place. Without this, scrolling up from the first beat clamped back onto
+      // anchors[0] forever: one scroll down and the corner chrome was stranded above an
+      // unreachable floor. Scrolling up AT the first beat eases to the true top; a
+      // further up-gesture on the hero stays put (there is nothing above).
+      if(dir < 0 && anchors.length){
+        if(window.scrollY <= Math.max(0, anchors[0] - 36)) return;
+        if(idx <= 0 && Math.abs(window.scrollY - anchors[0]) <= 90){ easeTo(0); return; }
+      }
       var freeTarget = freePassageBoundaryTarget(dir);
       if(freeTarget != null){ go(freeTarget); return; }
       var runway = freePassageRunwayFor(window.scrollY);
@@ -717,12 +857,49 @@
       }
       return false;
     }
+    // c263 · Reflectie GLIDE. The free passage scrolls natively, and on a notched mouse wheel that is a
+    // hard mechanical ratchet: every click jumps ~100px in a single frame. Here a wheel CLICK sets a
+    // target and the page glides to it — light, not a heavy smooth-scroll: ~95% there in ~0.2s, clicks
+    // accumulate so a fast spin flows instead of stuttering. Trackpads (continuous, already smooth),
+    // keys, the scrollbar and touch stay native. The glide stays inside the passage, so the pager still
+    // takes over exactly at its edges; anything else moving the page lets it go at once.
+    var glide = { raf: 0, y: 0, target: 0, last: 0, p: null }, GLIDE_TAU = 70;
+    function notchy(e){
+      if (e.deltaMode) return true;                           // lines / pages: a wheel (Firefox)
+      var w = e.wheelDeltaY;                                  // Chromium / WebKit: ±120 per click
+      return !!w && Math.abs(w) >= 120 && w % 120 === 0;
+    }
+    function glideBy(e){
+      var y = window.scrollY, p = null;
+      for (var i = 0; i < freePassages.length; i++){
+        var fp = freePassages[i];
+        if (y >= fp.start - 12 && y <= fp.end + 12) p = fp;
+      }
+      if (!p) return false;
+      var d = e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * window.innerHeight * .9 : e.deltaY;
+      if (!glide.raf || glide.p !== p){ glide.p = p; glide.target = y; glide.y = y; glide.last = 0; }
+      glide.target = Math.max(p.start, Math.min(p.end, glide.target + d));
+      if (!glide.raf) glide.raf = requestAnimationFrame(glideFrame);
+      return true;
+    }
+    function glideFrame(ts){
+      glide.raf = 0;
+      if (animating || paused() || Math.abs(window.scrollY - glide.y) > 2) return;   // the pager / a modal / the scrollbar took over
+      var dt = glide.last ? Math.min(50, ts - glide.last) : 16; glide.last = ts;
+      var y = glide.y + (glide.target - glide.y) * (1 - Math.exp(-dt / GLIDE_TAU));
+      if (Math.abs(glide.target - y) < .5) y = glide.target;
+      glide.y = y; setY(y);
+      if (y !== glide.target) glide.raf = requestAnimationFrame(glideFrame);
+    }
     addEventListener('wheel', function(e){
       var now = Date.now(), wheelGap = lastWheelAt ? now - lastWheelAt : 9999;
       lastWheelAt = now;
       if (paused()) return;                                   // modal open → it owns the wheel
       if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;   // horizontal intent → leave it native
-      if (freePassageNative(e.deltaY > 0 ? 1 : -1)) return;   // free-scroll Reflectie (don't hijack)
+      if (freePassageNative(e.deltaY > 0 ? 1 : -1)){          // free-scroll Reflectie (don't hijack)…
+        if (!reduce && notchy(e) && glideBy(e)) e.preventDefault();   // …but let a wheel click glide
+        return;
+      }
       e.preventDefault();                                     // from here the page scroll is ours
       if (inAppendix()){                                      // c200 · colofon exit: one-way
         if (e.deltaY < 0 && !busy){ busy = true; go(beats.length-1); armTail(); }
@@ -760,11 +937,11 @@
 
     // Re-sync the index after any scroll we didn't drive (sidebar / dots / anchor / focus).
     var sync = 0;
-    addEventListener('scroll', function(){
+    FactsheetMotion.onScroll(function(){
       if (animating || busy) return;
       if (sync) clearTimeout(sync);
       sync = setTimeout(function(){ idx = nearest(); }, 120);
-    }, { passive:true });
+    });
 
     addEventListener('resize', measure);
     measure();
@@ -785,7 +962,7 @@
       var atEnd = anchors.length && window.scrollY >= anchors[anchors.length - 1] - 6;   // settled on the last beat
       cueEl.classList.toggle('show', !!atEnd && !inAppendix());                           // hide once you're in the colofon
     }
-    addEventListener('scroll', cueSync, { passive:true });
+    FactsheetMotion.onScroll(cueSync);
     cueSync();
 
     // ── c187: our own scrollbar (the native one is hidden in CSS) ──────────────────
@@ -805,7 +982,7 @@
       thumb.style.height = th + 'px';
       thumb.style.transform = 'translateY(' + Math.max(0, Math.min(trackH - th, ty)) + 'px)';
     }
-    addEventListener('scroll', updateBar, { passive:true });
+    FactsheetMotion.onScroll(updateBar);
     addEventListener('resize', updateBar);
 
     // drag → free scrub. Listen on the document (not the thumb) for the duration so the
@@ -835,6 +1012,95 @@
     updateBar();
     setTimeout(updateBar, 500);
   }catch(e){ /* never break scrolling */ }
+})();
+
+// ── c259 · AmbientHold — the drifting logo silhouettes stand still while the pager eases ────────
+// (factsheet:paging), so only the page moves, and resume on landing. Their phase is anchored to WALL
+// time (syncDecorClock: every page floats the same set at the same phase), so after a hold they don't
+// jump back into step — they drift a touch faster (≤ +25%) for a few seconds until the held time is
+// made up, then settle back to 1×. Lag is bounded (HOLD_BUDGET). Only RUNNING animations pause, only
+// PAUSED ones resume.
+(function(){
+  try{
+    var PERIOD = 1100000, HOLD_BUDGET = 600, steerT = 0;   // 1100s = lcm of the 20/25/22s cycles (see syncDecorClock)
+    var cached = null;                         // getAnimations() flushes style — read the set once, again only on resize
+    window.addEventListener('resize', function(){ cached = null; });
+    function anims(){
+      if (cached) return cached;
+      var out = [];
+      [].forEach.call(document.querySelectorAll('.logo-decor-shape'), function(el){
+        if (el.getAnimations) el.getAnimations().forEach(function(a){ if (a.animationName) out.push(a); });
+      });
+      return (cached = out);
+    }
+    function lag(a){                           // ms behind wall time; phase = currentTime − (negative) delay
+      var phase = (a.currentTime || 0) - (a.effect.getTiming().delay || 0);
+      var d = ((Date.now() - phase) % PERIOD + PERIOD) % PERIOD;
+      return d > PERIOD / 2 ? d - PERIOD : d;
+    }
+    function rate(a, r){
+      if (Math.abs(a.playbackRate - r) < .005) return;
+      if (a.updatePlaybackRate) a.updatePlaybackRate(r); else a.playbackRate = r;
+    }
+    function steer(){
+      steerT = 0;
+      var again = false;
+      anims().forEach(function(a){
+        if (a.playState !== 'running') return;
+        var l = lag(a), r = Math.abs(l) < 30 ? 1 : 1 + Math.max(-.25, Math.min(.25, l / 2000));
+        if (r !== 1) again = true;
+        rate(a, r);
+      });
+      if (again) steerT = setTimeout(steer, 250);
+    }
+    window.addEventListener('factsheet:paging', function(e){
+      var on = !!(e.detail && e.detail.on);
+      // fast paging leaves little idle time to catch up in: once the set is already HOLD_BUDGET behind
+      // the shared clock it keeps drifting (and catching up) through the ease instead of holding, so it
+      // is never far off the phase the next page will pick up.
+      if (on && anims().some(function(a){ return a.playState === 'running' && lag(a) > HOLD_BUDGET; })) return;
+      if (steerT){ clearTimeout(steerT); steerT = 0; }
+      anims().forEach(function(a){
+        if (on){ if (a.playState === 'running') a.pause(); }
+        else if (a.playState === 'paused') a.play();
+      });
+      if (!on) steerT = setTimeout(steer, 60);
+    });
+  }catch(e){ /* decorative — never break the page */ }
+})();
+
+// ── c260 · Dumbbell highlighter — ONE bar per chart that SLIDES behind the rows ────────────────────
+// The lit level used to be each row crossfading its own background: the old one fades out while
+// the new one fades in, so it read as a jump (and halfway both were half there). Now a single bar
+// travels from row to row on a beat change — the way the phone frame already does it (mobile.js ·
+// .md-dumb-hl). When a beat lights no row the bar fades out where it is; when it comes back it
+// fades in on its row instead of sliding in from a stale one. Rows keep their own background only
+// as the fallback without this bar (base.css · .dumb.has-hl).
+(function(){
+  try{
+    [].forEach.call(document.querySelectorAll('.scrolly .dumb'), function(dumb){
+      var scrolly = dumb.closest('.scrolly');
+      var hl = document.createElement('span');
+      hl.className = 'dumb-hl'; hl.setAttribute('aria-hidden', 'true');
+      dumb.insertBefore(hl, dumb.firstChild); dumb.classList.add('has-hl');
+      function place(){
+        var state = scrolly.getAttribute('data-active') || '';
+        var row = dumb.querySelector('.lvl[data-lvl="' + (state === 'goal' ? 'top' : state) + '"]');
+        if (!row || !row.offsetHeight){ hl.classList.remove('on'); return; }
+        var y = 'translateY(' + row.offsetTop + 'px)', h = row.offsetHeight + 'px';
+        if (!hl.classList.contains('on') && +getComputedStyle(hl).opacity < .05){
+          hl.style.transition = 'none';                     // out of sight → set it on its row, then fade in
+          hl.style.transform = y; hl.style.height = h;
+          void hl.offsetWidth; hl.style.transition = '';
+        } else { hl.style.transform = y; hl.style.height = h; }
+        hl.classList.toggle('is-goal', state === 'goal');
+        hl.classList.add('on');
+      }
+      new MutationObserver(place).observe(scrolly, { attributes:true, attributeFilter:['data-active'] });
+      if (window.ResizeObserver) new ResizeObserver(place).observe(dumb);
+      place();
+    });
+  }catch(e){ /* the rows' own fallback background still lights the level */ }
 })();
 
 // ── c164: dissolve ONLY the prose into the void under the sticky chapter title ──
@@ -869,7 +1135,7 @@
       }
     }
     function onScroll(){ if (!raf) raf = requestAnimationFrame(update); }
-    addEventListener('scroll', onScroll, {passive:true});
+    FactsheetMotion.onScroll(update);                 // already inside the clock's frame pass
     addEventListener('resize', onScroll);
     update();
   }catch(e){ /* never break scrolling */ }
@@ -976,7 +1242,7 @@
       card.style.transform = flip(true); card.style.opacity = '0';
       requestAnimationFrame(function(){ requestAnimationFrame(function(){
         stage.classList.add('open');
-        card.style.transition = 'transform .5s cubic-bezier(.2,.7,.2,1),opacity .4s ease';
+        card.style.transition = 'transform var(--dur-3) var(--ease-arrive),opacity var(--dur-2) var(--ease-arrive)';
         card.style.transform = 'none'; card.style.opacity = '1';
       });});
     }
@@ -989,7 +1255,7 @@
     stage.classList.remove('open');
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!reduce && srcRect){
-      card.style.transition = 'transform .42s cubic-bezier(.4,0,.2,1),opacity .35s ease';
+      card.style.transition = 'transform var(--dur-3-out) var(--ease-depart),opacity var(--dur-2-out) var(--ease-depart)';   // c259 · leaves faster than it came
       card.style.transform = flip(true); card.style.opacity = '0';
     }
     setTimeout(function(){
@@ -998,7 +1264,7 @@
       unlockScroll();                                             // c178: release the lock + the reserved gutter
       card.style.transition = 'none'; card.style.transform = 'none'; card.style.opacity = '';
       if (lastBtn){ try{ lastBtn.focus({preventScroll:true}); }catch(e){} lastBtn = null; }
-    }, reduce ? 0 : 430);
+    }, reduce ? 0 : FactsheetMotion.out('--dur-3', 500) + 40);   // after the slowest departure (stage + card)
   }
   function onKey(e){
     if (e.key === 'Escape'){ close(); return; }
@@ -1098,7 +1364,7 @@
     document.addEventListener('click', function(e){
       if(active && !e.target.closest('.fc-tip-trigger') && !e.target.closest('.fc-tip-popover')) close();
     }, true);
-    window.addEventListener('scroll', function(){ if(active) place(active); }, {passive:true});
+    FactsheetMotion.onScroll(function(){ if(active) place(active); });
     window.addEventListener('resize', function(){ if(active) place(active); });
 
     function groupFor(note){
@@ -1154,7 +1420,7 @@
     var dumbHoverLastAt = 0, dumbHoverLastLvl = '', dumbHoverColdUntil = 0;
     function coolDumbHover(ms){ dumbHoverColdUntil = Date.now() + (ms || 650); }
     addEventListener('wheel', function(){ coolDumbHover(900); }, {passive:true,capture:true});
-    addEventListener('scroll', function(){ coolDumbHover(220); }, {passive:true});
+    FactsheetMotion.onScroll(function(){ coolDumbHover(220); });
     Array.prototype.slice.call(document.querySelectorAll('.dumb .lvl')).forEach(function(row){
       var name = row.querySelector('.lvl-name');
       var val = row.querySelector('.lvl-val');
@@ -1422,11 +1688,20 @@
       for (var tries=0; tries<SOURCE_POOL.length + 2 && !n; tries++) n = nextFromSource(nextSource());
       lastImg = n; return n;
     }
+    var decoded = {}, decodedOrder = [];                 // the last few decoded photos (the frost twins draw from them)
     function preload(name, cb){                          // DECODE before we ever fade it in → no stutter
       var im = new Image(); im.src = url(name);
-      if (im.decode){ im.decode().then(cb, cb); }
-      else if (im.complete){ cb(); }
-      else { im.onload = cb; im.onerror = cb; }
+      function done(){
+        if (im.naturalWidth && !decoded[name]){
+          decoded[name] = im; decodedOrder.push(name);
+          if (decodedOrder.length > 4) delete decoded[decodedOrder.shift()];
+          warmFrost(name, im);
+        }
+        cb();
+      }
+      if (im.decode){ im.decode().then(done, done); }
+      else if (im.complete){ done(); }
+      else { im.onload = done; im.onerror = done; }
     }
 
     // ── c242 · Ken Burns drift. The moment a photo becomes the visible card it eases from a hair
@@ -1494,10 +1769,143 @@
       if (reduce || !img || !img.animate) return;
       if (img._kb){ try{ img._kb.cancel(); }catch(e){} }
       var focus = img._pdFocus || { tx:0, ty:0, s:1 };
-      img._kb = img.animate(
-        [{ transform: focusTransform(focus, KB_FROM) }, { transform: focusTransform(focus, 1) }],
-        { duration: KB_MS, easing: 'linear', fill: 'forwards' }
-      );
+      img._kbFrames = [{ transform: focusTransform(focus, KB_FROM) }, { transform: focusTransform(focus, 1) }];
+      img._kbOpts = { duration: KB_MS, easing: 'linear', fill: 'forwards' };
+      img._kb = img.animate(img._kbFrames, img._kbOpts);
+      if (kbHeld) img._kb.pause();                         // born during a page ease → waits for the landing
+      frostSync(img);
+    }
+    // c259 · the Ken Burns drift holds still while the pager eases (factsheet:paging) and resumes on
+    // landing. Cards and twins pause/play in the same task, so they stay on one timeline. Only RUNNING
+    // drifts pause and only PAUSED ones resume (play() on a finished one would rewind it).
+    var kbHeld = false;
+    function kbEach(fn){
+      [slotA, slotB].forEach(function(s){
+        if (!s) return;
+        var list = s.cards.slice();
+        s.parts.forEach(function(p){ if (p._twins) list = list.concat(p._twins); });
+        list.forEach(function(el){ if (el._kb) try{ fn(el._kb); }catch(e){} });
+      });
+    }
+    window.addEventListener('factsheet:paging', function(e){
+      kbHeld = !!(e.detail && e.detail.on);
+      kbEach(kbHeld ? function(a){ if (a.playState === 'running') a.pause(); }
+                    : function(a){ if (a.playState === 'paused') a.play(); });
+    });
+
+    // ── c259 · PRE-RENDERED TEXT FROST. The veil behind a text block used to be a live
+    // backdrop-filter (blur 13 · saturate .82 · brightness 1.1) that re-blurred the Ken-Burns-moving
+    // photo on EVERY frame — the costliest layer while the pager eases. Now each photo gets a blurred
+    // twin rendered ONCE (canvas filter, at reduced resolution — the blur hides it) and every veil part
+    // shows that twin, mirrored onto its card: same box + object-fit, same focus transform, the same
+    // Ken Burns timeline (shared startTime) and the same crossfade (class + inline opacity, copied in
+    // the same frame by a MutationObserver). Same look; per frame it is plain compositing. Browsers
+    // without canvas filters keep the live backdrop-filter (base.css · html:not(.pd-prefrost)).
+    var FROST_BLUR = 13, FROST_RES = .4, FROST_WASH = 'rgba(242,246,251,.48)';   // = the live veil in base.css
+    var prefrost = (function(){
+      try{
+        var c = document.createElement('canvas'); c.width = c.height = 9;
+        var x = c.getContext('2d'); if (!x || !('filter' in x)) return false;
+        x.filter = 'blur(2px)'; x.fillStyle = '#000'; x.fillRect(4, 4, 1, 1);
+        return x.getImageData(1, 4, 1, 1).data[3] > 0;
+      }catch(e){ return false; }
+    })();
+    if (prefrost) document.documentElement.classList.add('pd-prefrost');
+    var frostCache = {}, frostOrder = [];
+    // the photo downscaled to twin size (twin px per photo px = cover · FROST_RES), made OFF the main thread
+    // (createImageBitmap + resize) as soon as a photo is decoded — before it is ever shown
+    var small = {}, smallOrder = [];
+    function smallSize(name, im){
+      var host = slotA && slotA.host, cw = host && host.clientWidth, ch = host && host.clientHeight;
+      if (!name || !im || !im.naturalWidth || !cw || !ch) return null;
+      var k = Math.min(1, Math.max(cw / im.naturalWidth, ch / im.naturalHeight) * FROST_RES);
+      var w = Math.max(8, Math.round(im.naturalWidth * k)), h = Math.max(8, Math.round(im.naturalHeight * k));
+      return { w:w, h:h, key: name + '|' + w + 'x' + h };
+    }
+    function warmFrost(name, im){
+      var S = prefrost && window.createImageBitmap && smallSize(name, im);
+      if (!S || small[S.key]) return;
+      small[S.key] = 'pending';
+      function ready(v){
+        small[S.key] = v; smallOrder.push(S.key);
+        if (smallOrder.length > 6){ var old = small[smallOrder[0]]; delete small[smallOrder.shift()]; if (old && old.close) old.close(); }
+        [slotA, slotB].forEach(function(sl){ sl.cards.forEach(function(c){ if (c.dataset.pdName === name) frostSync(c); }); });
+      }
+      var opts = { resizeWidth:S.w, resizeHeight:S.h, resizeQuality:'medium' };
+      function fromImg(){ return createImageBitmap(im, opts); }       // (decodes on the main thread)
+      try{
+        // from a Blob the browser decodes + resizes off the main thread; the photo is already in the HTTP
+        // cache from the preload, so force-cache reads it without another request
+        (window.fetch && /^https?:$/.test(location.protocol)
+          ? fetch(url(name), { cache:'force-cache' })
+              .then(function(r){ if (!r.ok) throw 0; return r.blob(); })
+              .then(function(b){ return createImageBitmap(b, opts); })
+              .catch(fromImg)
+          : fromImg()
+        ).then(ready, function(){ ready('sync'); });
+      }catch(e){ ready('sync'); }
+    }
+    function frostMaster(card){
+      var name = card.dataset.pdName, im = decoded[name];
+      if (!im && card.complete && card.naturalWidth) im = card;
+      var S = smallSize(name, im);
+      if (!S) return null;
+      var fs = (card._pdFocus && card._pdFocus.s) || 1, key = S.key + '|' + fs.toFixed(3);
+      if (frostCache[key]) return frostCache[key];
+      var src = small[S.key];
+      if (!src){ warmFrost(name, im); src = small[S.key] || 'sync'; }
+      if (src === 'pending') return null;                  // the bitmap lands in a moment → frostSync redraws
+      var w = S.w, h = S.h;
+      // on screen a twin px spans (focus scale · zoom / FROST_RES) px, so this radius IS 13 screen px
+      var r = FROST_BLUR * FROST_RES / fs, pad = Math.ceil(r * 3);
+      // edge-extend into a padding first (like the live blur's clamped edge): the blur never pulls
+      // transparency in from outside the frame
+      var t = document.createElement('canvas'); t.width = w + pad * 2; t.height = h + pad * 2;
+      var tc = t.getContext('2d');
+      tc.drawImage(src === 'sync' ? im : src, pad, pad, w, h);
+      tc.drawImage(t, pad, pad, 1, h, 0, pad, pad, h);
+      tc.drawImage(t, pad + w - 1, pad, 1, h, pad + w, pad, pad, h);
+      tc.drawImage(t, 0, pad, t.width, 1, 0, 0, t.width, pad);
+      tc.drawImage(t, 0, pad + h - 1, t.width, 1, 0, pad + h, t.width, pad);
+      var m = document.createElement('canvas'); m.width = w; m.height = h;
+      var mc = m.getContext('2d');
+      mc.filter = 'blur(' + r.toFixed(2) + 'px) saturate(.82) brightness(1.1)';
+      mc.drawImage(t, -pad, -pad);
+      // the veil's wash is baked in too (one layer per part instead of two). Exact, also mid-crossfade:
+      // a·(W+P1) + (1−a)·(W+P2) = W + (a·P1 + (1−a)·P2), with the wash W and the photos P opaque.
+      mc.filter = 'none'; mc.fillStyle = FROST_WASH; mc.fillRect(0, 0, w, h);
+      frostOrder.push(key); if (frostOrder.length > 6) delete frostCache[frostOrder.shift()];
+      return (frostCache[key] = m);
+    }
+    function mirror(card, twin){
+      twin.style.cssText = card.style.cssText;            // focus transform, origin, z-index, opacity
+      twin.className = card.className;                    // pd-card (+ pd-out → the same crossfade transition)
+      // the card underneath is fully covered except while the top one fades: skip drawing its twin
+      var slot = card._slot, top = slot.cards[1 - card._i];
+      if (card.style.zIndex === '1' && !top.classList.contains('pd-out')) twin.style.visibility = 'hidden';
+      var src = card.getAttribute('src'), m = src ? frostMaster(card) : null;
+      // a new master still on its way (e.g. after a resize) → keep showing the old one of the SAME photo
+      if (!m && src && twin._src === src) m = twin._m;
+      if (twin._m !== m){
+        twin._m = m; twin._src = src;
+        twin.width = m ? m.width : 1; twin.height = m ? m.height : 1;   // resizing clears the canvas
+        if (m) twin.getContext('2d').drawImage(m, 0, 0);
+      }
+      var kb = card._kb;
+      if (twin._kbOf !== kb){
+        if (twin._kb){ try{ twin._kb.cancel(); }catch(e){} }
+        twin._kb = null; twin._kbOf = kb;
+        if (kb && kb.playState !== 'idle'){
+          twin._kb = twin.animate(card._kbFrames, card._kbOpts);
+          if (kb.startTime != null) twin._kb.startTime = kb.startTime;
+          else { twin._kb.currentTime = kb.currentTime || 0; if (kb.playState === 'paused') twin._kb.pause(); }
+        }
+      }
+    }
+    function frostSync(card){
+      var slot = card && card._slot;
+      if (!prefrost || !slot) return;
+      slot.parts.forEach(function(p){ slot.cards.forEach(function(c, i){ mirror(c, p._twins[i]); }); });
     }
 
     // the tic-tac-toe grid MINUS centre, top-centre, AND middle-left: the left text lane is sacred.
@@ -1524,7 +1932,14 @@
       var mask = document.createElement('div');
       mask.className = 'pd-mask-layer';
       host.appendChild(mask);
-      return { host:host, top:a, under:b, mask:mask, cyc:0 };
+      var slot = { host:host, top:a, under:b, mask:mask, cyc:0, cards:[a, b], parts:[], used:0 };
+      if (prefrost) slot.cards.forEach(function(card, i){
+        card._slot = slot; card._i = i;
+        new MutationObserver(function(){ frostSync(card); })
+          .observe(card, { attributes:true, attributeFilter:['style','class','src'] });
+        card.addEventListener('load', function(){ frostSync(card); });
+      });
+      return slot;
     }
     var slotA = makeSlot(), slotB = makeSlot(), active = null;
 
@@ -1553,17 +1968,35 @@
       if(cut.r < rect.r) out.push({l:ix2,t:iy1,r:rect.r,b:iy2});
       return out.filter(function(r){ return r.r - r.l > 4 && r.b - r.t > 4; });
     }
-    function addMaskPart(mask, rect, radius, kind){
+    // veil parts are POOLED per slot (re-placed every scroll frame, not rebuilt), so their frost twins
+    // and twin animations persist; a part that is no longer needed is just hidden. c259 · each pass
+    // READS every rect first (both slots + the text-contrast targets) and only then WRITES — and only
+    // the styles that changed — so a frame never forces layout part by part.
+    function put(el, prop, v){ if (el['_' + prop] !== v){ el['_' + prop] = v; el.style[prop] = v; } }
+    function makePart(slot){
       var m = document.createElement('span');
-      m.className = 'pd-mask' + (kind ? ' ' + kind : '');
-      m.style.left = rect.l + 'px';
-      m.style.top = rect.t + 'px';
-      m.style.width = (rect.r - rect.l) + 'px';
-      m.style.height = (rect.b - rect.t) + 'px';
-      m.style.setProperty('--pd-mask-radius', radius + 'px');
-      mask.appendChild(m);
+      if (prefrost){
+        var frame = document.createElement('span'); frame.className = 'pd-frost';
+        m._twins = slot.cards.map(function(){ var c = document.createElement('canvas'); frame.appendChild(c); return c; });
+        m._frame = frame; m.appendChild(frame);
+        slot.cards.forEach(function(card, i){ mirror(card, m._twins[i]); });
+      }
+      slot.parts.push(m); slot.mask.appendChild(m);
+      return m;
     }
-    function addMask(mask, hostRect, targetRect, pad, radius, cutout, kind){
+    function writePart(slot, m, p, hw, hh){
+      var cls = 'pd-mask' + (p.kind ? ' ' + p.kind : '');
+      if (m._cls !== cls){ m._cls = cls; m.className = cls; }
+      put(m, 'display', '');
+      put(m, 'left', p.l + 'px'); put(m, 'top', p.t + 'px');
+      put(m, 'width', (p.r - p.l) + 'px'); put(m, 'height', (p.b - p.t) + 'px');
+      if (m._rad !== p.radius){ m._rad = p.radius; m.style.setProperty('--pd-mask-radius', p.radius + 'px'); }
+      if (m._frame){                                      // the twin stays registered to the HOST box
+        put(m._frame, 'left', -p.l + 'px'); put(m._frame, 'top', -p.t + 'px');
+        put(m._frame, 'width', hw + 'px'); put(m._frame, 'height', hh + 'px');
+      }
+    }
+    function planMask(out, hostRect, targetRect, pad, radius, cutout, kind){
       var rect = {
         l: Math.max(0, targetRect.left - hostRect.left - pad.l),
         t: Math.max(0, targetRect.top - hostRect.top - pad.t),
@@ -1571,47 +2004,46 @@
         b: Math.min(hostRect.height, targetRect.bottom - hostRect.top + pad.b)
       };
       if (rect.l >= rect.r || rect.t >= rect.b) return;
-      subtractRect(rect, cutout).forEach(function(part){ addMaskPart(mask, part, radius, kind); });
+      subtractRect(rect, cutout).forEach(function(part){ part.radius = radius; part.kind = kind; out.push(part); });
     }
-    function updateMaskFor(slot){
-      if(!slot || !slot.host || !slot.mask) return;
-      var hostRect = slot.host.getBoundingClientRect();
-      slot.mask.innerHTML = '';
-      if(hostRect.width <= 0 || hostRect.height <= 0) return;
-      var cutout = null, sb = document.getElementById('sb');
-      if(sb){
-        var scs = getComputedStyle(sb), sr = sb.getBoundingClientRect();
-        if(scs.display !== 'none' && sr.width > 0 && sr.height > 0){
-          // Do not draw expensive text-frost underneath the sidebar's own backdrop blur.
-          // Expand by roughly the mask glow, so no hidden feather leaks under the panel.
-          var bleed = 30;
-          cutout = {
-            l: sr.left - hostRect.left - bleed,
-            t: sr.top - hostRect.top - bleed,
-            r: sr.right - hostRect.left + bleed,
-            b: sr.bottom - hostRect.top + bleed
-          };
-        }
+    function readTexts(){
+      var vis = function(sel){
+        return Array.prototype.slice.call(document.querySelectorAll(sel))
+          .map(function(el){ return el.getBoundingClientRect(); }).filter(visibleRect);
+      };
+      var sb = document.getElementById('sb'), sr = null;
+      if (sb){
+        var scs = getComputedStyle(sb), r = sb.getBoundingClientRect();
+        if (scs.display !== 'none' && r.width > 0 && r.height > 0) sr = r;
+      }
+      return { bodies: vis('.pd-grp,.fw-body,.appendix .apx-col'), heads: vis('.phead h2'), sb: sr };
+    }
+    function planSlot(slot, T){
+      if(!slot || !slot.host || !slot.mask) return null;
+      var hostRect = slot.host.getBoundingClientRect(), plan = { slot:slot, parts:[], hw:slot.host.clientWidth, hh:slot.host.clientHeight };
+      if (!(hostRect.width > 0 && hostRect.height > 0)) return plan;
+      var cutout = null;
+      if (T.sb){
+        // Do not draw expensive text-frost underneath the sidebar's own backdrop blur.
+        // Expand by roughly the mask glow, so no hidden feather leaks under the panel.
+        var bleed = 30;
+        cutout = { l: T.sb.left - hostRect.left - bleed, t: T.sb.top - hostRect.top - bleed,
+                   r: T.sb.right - hostRect.left + bleed, b: T.sb.bottom - hostRect.top + bleed };
       }
       var bodyPad = {t:96,r:92,b:96,l:92};
       var headPad = {t:220,r:660,b:34,l:148};
-      function actuallyVisible(r){
-        return visibleRect(r);
-      }
-      Array.prototype.slice.call(document.querySelectorAll('.pd-grp,.fw-body,.appendix .apx-col')).forEach(function(el){
-        var r = el.getBoundingClientRect();
-        if(!actuallyVisible(r)) return;
-        addMask(slot.mask, hostRect, r, bodyPad, 64, cutout);
-      });
-      if(!slot.host.classList.contains('pd-tr')){
-        Array.prototype.slice.call(document.querySelectorAll('.phead h2')).forEach(function(el){
-          var r = el.getBoundingClientRect();
-          if(!actuallyVisible(r)) return;
-          addMask(slot.mask, hostRect, r, headPad, 56, cutout, 'pd-mask-head');
-        });
-      }
+      T.bodies.forEach(function(r){ planMask(plan.parts, hostRect, r, bodyPad, 64, cutout); });
+      if(!slot.host.classList.contains('pd-tr'))
+        T.heads.forEach(function(r){ planMask(plan.parts, hostRect, r, headPad, 56, cutout, 'pd-mask-head'); });
+      return plan;
     }
-    function updateTextContrast(){
+    function applySlot(plan){
+      if (!plan) return;
+      var slot = plan.slot, i;
+      for (i = 0; i < plan.parts.length; i++) writePart(slot, slot.parts[i] || makePart(slot), plan.parts[i], plan.hw, plan.hh);
+      for (; i < slot.parts.length; i++) put(slot.parts[i], 'display', 'none');
+    }
+    function planTextContrast(){
       var photoRects = [slotA,slotB].map(function(slot){
         if(!slot || !slot.host) return null;
         var cs = getComputedStyle(slot.host);
@@ -1624,19 +2056,23 @@
       var targets = Array.prototype.slice.call(document.querySelectorAll(
         '.pd-grp,.fw-body,.appendix .apx-col,.phead h2,.phead .meta,.mast .kick,.mast h1,.mast p,.mast .hint'
       ));
-      targets.forEach(function(el){
+      return targets.map(function(el){
         var r = el.getBoundingClientRect();
-        var hit = visibleRect(r) && photoRects.some(function(pr){ return overlapEnough(r, pr); });
-        el.classList.toggle('pd-over-photo', !!hit);
+        return { el:el, hit: !!(visibleRect(r) && photoRects.some(function(pr){ return overlapEnough(r, pr); })) };
       });
     }
-    function updateMasks(){ maskQueued = false; updateMaskFor(slotA); updateMaskFor(slotB); updateTextContrast(); }
+    function updateMasks(){
+      maskQueued = false;
+      var T = readTexts(), plans = [planSlot(slotA, T), planSlot(slotB, T)], contrast = planTextContrast();   // reads …
+      plans.forEach(applySlot);                                                                              // … then writes
+      contrast.forEach(function(c){ if (c.el.classList.contains('pd-over-photo') !== c.hit) c.el.classList.toggle('pd-over-photo', c.hit); });
+    }
     function scheduleMasks(){
       if(maskQueued) return;
       maskQueued = true;
       requestAnimationFrame(updateMasks);
     }
-    window.addEventListener('scroll', scheduleMasks, {passive:true});
+    FactsheetMotion.onScroll(function(){ updateMasks(); });   // in the clock's frame pass: same frame as the scroll
     function refocusSlot(slot){
       if(!slot) return;
       [slot.top, slot.under].forEach(function(img){
@@ -1658,7 +2094,13 @@
       fotos.forEach(function(f){ fio.observe(f); });
     }
     function quoteActive(){ var q = document.getElementById('quote-layer'); return !!(q && q.classList.contains('is-active') && q.innerHTML); }
-    function blocked(){ return anyPhoto || quoteActive(); }
+    // c272 · THE COVER. The page comes up as a calm cover — the title, the scroll cue, the first sheet still
+    // low, the Inleiding figure waiting below its card's edge — and nothing has started yet. The photos wait
+    // for the reader's first tick too: at the very top their text veils had to frost around a half-arrived
+    // layout (rough rectangles round the title). The tick starts everything at once — the sheet slides
+    // into place, the figure rises, the first photo fades in. Back at the very top they clear again.
+    function atCover(){ return (window.scrollY || window.pageYOffset || 0) < Math.min(80, window.innerHeight * .08); }
+    function blocked(){ return anyPhoto || quoteActive() || atCover(); }
 
     var CELL_POS = {
       'pd-tl':[0,0], 'pd-tr':[2,0],
@@ -1795,6 +2237,7 @@
       }
     }
     setInterval(reactGate, 300);                            // also catches quote overlays (no observer of their own)
+    FactsheetMotion.onScroll(reactGate);                    // c272 · …and answers the first tick at once
 
     if (blocked()) state = 'pause';
     setTimeout(function(){ if (state === 'run') advance(null); }, 1100);   // first appearance once settled
@@ -1849,7 +2292,7 @@
       }
       host.classList.add('show');
     }
-    addEventListener('scroll', function(){ if (!ticking){ ticking = true; requestAnimationFrame(paint); } }, { passive:true });
+    FactsheetMotion.onScroll(paint);
     addEventListener('resize', function(){ SEGS = null; lastKey = ''; paint(); });
     paint(); setTimeout(paint, 400); setTimeout(paint, 1500);          // catch late font/image reflow
   }catch(e){ /* wayfinding nicety — never break the page */ }
@@ -1909,7 +2352,21 @@
   }
 
   function writeIntent(to){
-    try { sessionStorage.setItem(KEY, JSON.stringify({ from: 'scrollytell', to: to })); }
+    // carry the LIVE floor hue with the intent: the deck's void changes per chapter, so
+    // the vragenlijst must start its arrival fade from whatever colour the user actually
+    // left on — not from a hardcoded top-of-deck hue (that snap was visible when leaving
+    // from a lila/roze/perzik chapter). Registered <color> props compute to rgb() values,
+    // which reseat cleanly as inline styles on the destination floor.
+    var v = null;
+    try {
+      var f = getFloor();
+      if (f) {
+        var cs = getComputedStyle(f);
+        v = [cs.getPropertyValue('--void-a').trim(), cs.getPropertyValue('--void-b').trim(), cs.getPropertyValue('--void-c').trim()];
+        if (!v[0] || !v[1] || !v[2]) v = null;
+      }
+    } catch (e) { v = null; }
+    try { sessionStorage.setItem(KEY, JSON.stringify({ from: 'scrollytell', to: to, void: v })); }
     catch (e) {}
   }
 
@@ -1952,33 +2409,160 @@
     });
   }
 
-  function setup(){
+  function releaseHold(root){
+    root.classList.remove('route-hold-from-login');
+    if (!root.classList.contains('route-enter-from-login')) root.classList.remove('route-transitioning');
+  }
+
+  // Reads the intent and plays the enter slide. Runs at DOMContentLoaded on a normal load
+  // (taking over the pre-paint hold set by the body-open gate), or at prerender ACTIVATION —
+  // a prerendered copy initialised before the click, so its sessionStorage clone had no
+  // intent yet; the real intent only becomes readable once the page is activated.
+  function applyEnter(fromActivation){
     var root = document.documentElement;
     var intent = readIntent();
 
-    if (intent && intent.to === 'scrollytell') {
-      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-      window.scrollTo(0, 0);
-      if (reduceMotion) {
+    if (!intent || intent.to !== 'scrollytell') { releaseHold(root); return; }
+
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    window.scrollTo(0, 0);
+    if (reduceMotion) {
+      releaseHold(root);
+      clearIntent();
+    } else if (!fromActivation && !root.classList.contains('route-hold-from-login') && !root.classList.contains('m-deck')) {
+      // The gate held the page off-screen pre-paint; if the hold is already gone we are
+      // late (its failsafe fired) or the gate never ran (e.g. an archive snapshot's CSP
+      // carries no hash for it). The page is at rest and visible: starting the slide NOW
+      // would be the exact double-appearance this system exists to kill. Show at rest.
+      // Prerender activations legitimately arrive unheld (the gate skips while
+      // prerendering); the phone frame never holds and animates a hidden element anyway.
+      releaseHold(root);
+      clearIntent();
+    } else {
+      // add the animation before dropping the hold, in one synchronous block: the hold's
+      // transform equals the animation's from-frame, so no rest-state frame can slip out.
+      // route-void-fade carries the 1100ms chapter-cadence hue fade (css/void.css) and
+      // outlives the short route lock below, so the fade breathes past the slide.
+      root.classList.add('route-transitioning', 'route-enter-from-login', 'route-void-fade');
+      root.classList.remove('route-hold-from-login');
+      animateVoidFromLogin();
+      setTimeout(function(){
+        root.classList.remove('route-transitioning', 'route-enter-from-login');
         clearIntent();
-      } else {
-        root.classList.add('route-transitioning', 'route-enter-from-login');
-        animateVoidFromLogin();
-        setTimeout(function(){
-          root.classList.remove('route-transitioning', 'route-enter-from-login');
-          clearIntent();
-        }, DURATION + 120);
-      }
+      }, DURATION + 120);
+      setTimeout(function(){ root.classList.remove('route-void-fade'); }, 1250);
+    }
+  }
+
+  // ── idle priming ── the vragenlijst is not another page, it's the panel to the RIGHT
+  // of this one on the same surface: load it the way content below the fold gets loaded —
+  // always, once the deck has settled (load + idle), so the pan starts on a document that
+  // is already parsed and idle instead of one still hammering the main thread. Chromium:
+  // a real prerender (Speculation Rules API) — the page sits fully rendered in a hidden
+  // renderer and activates instantly. Elsewhere: prefetch warmth for the page and its
+  // heaviest subresources. Fires once.
+  var primed = false;
+
+  // BYTE-STABLE rules JSON (relative URL, resolved against the document base): its sha256
+  // is allowlisted in netlify.toml's CSP, so the injected block passes the strict policy
+  // on every Chromium. Change a byte here and you must update that hash in the same commit.
+  var PRIME_RULES = '{"prerender":[{"urls":["/vragenlijst"]}]}';
+
+  function prime(){
+    if (primed) return;
+    primed = true;
+    if (window.HTMLScriptElement && HTMLScriptElement.supports && HTMLScriptElement.supports('speculationrules')) {
+      var s = document.createElement('script');
+      s.type = 'speculationrules';
+      s.textContent = PRIME_RULES;
+      document.head.appendChild(s);
+    } else {
+      ['/vragenlijst', '/css/void.css', '/css/styles.css', '/js/survey.js', '/js/app.js',
+       '/js/api.js', '/js/auth.js', '/js/config.js', '/js/constants.js', '/js/storage.js',
+       '/css/flatpickr-theme.css', '/components/privacy-panel/privacy-panel.css',
+       '/components/privacy-panel/privacy-panel.js'].forEach(function(u){
+        var l = document.createElement('link');
+        l.rel = 'prefetch';
+        l.href = u;
+        document.head.appendChild(l);
+      });
+    }
+  }
+
+  function armPriming(){
+    // the phone frame (html.m-deck) has no corner link to the vragenlijst — nothing to prime
+    if (document.documentElement.classList.contains('m-deck')) return;
+    function schedule(){
+      if ('requestIdleCallback' in window) requestIdleCallback(function(){ prime(); }, { timeout: 4000 });
+      else setTimeout(prime, 1500);
+    }
+    if (document.readyState === 'complete') schedule();
+    else window.addEventListener('load', schedule, { once: true });
+  }
+
+  // ── shared decor clock ── both pages float the SAME three logo silhouettes; each
+  // document runs its own CSS animation, so without a common clock the incoming page's
+  // shapes restart at phase 0 and visibly jump against where the outgoing page had them.
+  // Anchoring every page's animation-delay to wall time (negative delay = seconds since
+  // epoch, mod 1100s = lcm of the 20/25/22s cycles) puts any two documents at the SAME
+  // phase at any real-world moment — one set, shared across the whole site.
+  function syncDecorClock(){
+    try {
+      document.documentElement.style.setProperty('--decor-clock', '-' + ((Date.now() / 1000) % 1100).toFixed(2) + 's');
+    } catch (e) {}
+  }
+
+  function setup(){
+    syncDecorClock();
+    if (document.prerendering) {
+      // this copy is being prerendered (from the login page): defer the enter to
+      // activation — prerenderingchange fires before the first presented frame — and
+      // never chain a further speculation from a hidden page.
+      document.addEventListener('prerenderingchange', function(){
+        applyEnter(true);
+        armPriming();
+      }, { once: true });
+    } else {
+      applyEnter(false);
+      armPriming();
     }
 
+    // ── exit pan ── the click does not navigate immediately: the whole monitor panel
+    // (route-page + corner links + sidebar + photo-drift carousels, see base.css) first
+    // pans out to the LEFT over the stationary void. Navigation fires a QUARTER into the
+    // pan — the neighbour is idle-prerendered, so the swap is instant and its enter
+    // begins while the exit is still in flight (by then the eased pan has the panel
+    // ~80% off-screen): exit and entrance run in tandem instead of queueing, without
+    // both being at full motion at once. The void keeps the CURRENT chapter hue through
+    // the exit; the intent carries that hue so the arrival fades from it (writeIntent).
+    var exiting = false;
     document.addEventListener('click', function(e){
       var link = e.target.closest && e.target.closest('[data-route-transition="login"]');
       if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
       e.preventDefault();
+      if (exiting) return;
       writeIntent('login');
 
-      window.location.href = link.href;
+      if (reduceMotion) { window.location.href = link.href; return; }
+
+      exiting = true;
+      var root = document.documentElement;
+      root.classList.add('route-transitioning', 'route-exit-to-login');
+      setTimeout(function(){ window.location.href = link.href; }, Math.round(DURATION / 4));
+      // if the navigation never commits (offline, blocked), un-freeze the page
+      setTimeout(function(){
+        root.classList.remove('route-exit-to-login', 'route-transitioning');
+        exiting = false;
+      }, DURATION + 2200);
+    });
+
+    // bfcache restore (browser Back) can resurrect this document mid- or post-exit —
+    // clear the exit state so the page is usable again
+    window.addEventListener('pageshow', function(e){
+      if (!e.persisted) return;
+      document.documentElement.classList.remove('route-exit-to-login', 'route-transitioning');
+      exiting = false;
     });
   }
 

@@ -1817,14 +1817,19 @@
       });
   }
 
-  /* Filter op de publicatiepagina */
+  /* Filter op de publicatiepagina: zoektekst + thema- en soortknoppen (chips).
+     Zonder JavaScript staat de hele lijst er gewoon. */
   var input = document.getElementById('pub-filter');
   if (input) {
     var items = Array.prototype.slice.call(document.querySelectorAll('.pub-list li'));
     var sections = Array.prototype.slice.call(document.querySelectorAll('.pub-section'));
     var counter = document.querySelector('.result-count');
     var empty = document.querySelector('.no-results');
+    var themeChips = Array.prototype.slice.call(document.querySelectorAll('.chip[data-theme]'));
+    var typeChips = Array.prototype.slice.call(document.querySelectorAll('.chip[data-type]'));
     var total = items.length;
+    var theme = '';
+    var type = '';
 
     var strip = function (s) {
       return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -1835,7 +1840,9 @@
       var q = strip(input.value.trim());
       var shown = 0;
       items.forEach(function (li) {
-        var hit = !q || li.dataset.q.indexOf(q) !== -1;
+        var hit = (!q || li.dataset.q.indexOf(q) !== -1) &&
+                  (!theme || (' ' + (li.dataset.themes || '') + ' ').indexOf(' ' + theme + ' ') !== -1) &&
+                  (!type || li.dataset.type === type);
         li.hidden = !hit;
         if (hit) { shown++; }
       });
@@ -1844,10 +1851,35 @@
         sec.hidden = !any;
       });
       if (counter) {
-        counter.textContent = q ? shown + ' van ' + total + ' publicaties' : total + ' publicaties';
+        counter.textContent = (q || theme || type)
+          ? shown + ' van ' + total + (shown === 1 ? ' publicatie' : ' publicaties')
+          : 'Nieuwste eerst';
       }
       if (empty) { empty.style.display = shown === 0 ? 'block' : 'none'; }
     };
+
+    var wireChips = function (chips, key, set) {
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var value = chip.dataset[key];
+          set(value);
+          chips.forEach(function (c) {
+            var on = c.dataset[key] === value;
+            c.classList.toggle('is-active', on);
+            c.setAttribute('aria-pressed', on ? 'true' : 'false');
+          });
+          apply();
+        });
+      });
+    };
+    wireChips(themeChips, 'theme', function (v) { theme = v; });
+    wireChips(typeChips, 'type', function (v) { type = v; });
+
+    /* ?thema=top vanaf de homepage */
+    var params = new URLSearchParams(window.location.search);
+    var wanted = params.get('thema');
+    var chip = wanted && themeChips.filter(function (c) { return c.dataset.theme === wanted; })[0];
+    if (chip) { chip.click(); }
 
     input.addEventListener('input', apply);
     apply();
