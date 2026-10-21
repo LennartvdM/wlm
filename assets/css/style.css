@@ -672,6 +672,17 @@ body.home-scrolly [data-site-snap] {
   --display: var(--monitor-display);
   --ease: cubic-bezier(.2, .8, .2, 1);
   --ease2: cubic-bezier(.16, 1, .3, 1);
+  /* motion tokens of the deck (shell/base.css), used by monitor-sample/p02.css */
+  --ease-arrive: cubic-bezier(.22, .61, .36, 1);
+  --ease-depart: cubic-bezier(.4, 0, 1, 1);
+  --ease-move: cubic-bezier(.33, 0, .2, 1);
+  --dur-1: .2s;
+  --dur-2: .35s;
+  --dur-3: .5s;
+  --dur-2-out: calc(var(--dur-2) * .65);
+  --dur-3-out: calc(var(--dur-3) * .65);
+  --stagger-cap: 420ms;
+  --seam: 16px;
   --monitor-mini-pad: 0px;
   position: relative;
   z-index: 2;
@@ -957,118 +968,46 @@ body.home-scrolly [data-site-snap] {
   font-style: italic;
   line-height: 1.3;
 }
-.monitor-sample #p02 .talent-trajectory {
-  position: relative;
-  width: min(100%, calc(var(--monitor-sample-h) * 1.35));
-  height: min(calc(var(--monitor-sample-h) * .5), 17rem);
-  margin: 0 auto;
+/* c272 · the Inleiding figures (stairs, levels, the women) come from monitor-sample/p02.css;
+   here only their sizing for the sample's smaller stage */
+.monitor-sample #p02 {
+  --p02-card-h: var(--monitor-figure-h);
 }
-.monitor-sample #p02 .tt-svg {
-  position: absolute;
-  inset: -4% auto auto -5%;
-  width: 110%;
-  height: 100%;
-  overflow: visible;
-}
-.monitor-sample #p02 .tt-route,
-.monitor-sample #p02 .tt-branch,
-.monitor-sample #p02 .tt-trunk {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-.monitor-sample #p02 .tt-metro-lines { filter: drop-shadow(0 4px 9px rgba(80, 104, 190, .08)); }
-.monitor-sample #p02 .tt-route { stroke-width: 13.6; opacity: .82; }
-.monitor-sample #p02 .tt-branch { stroke-width: 13.6; opacity: .46; }
-.monitor-sample #p02 .tt-route-a { stroke: #edf3ff; }
-.monitor-sample #p02 .tt-route-b { stroke: #d5e1ff; }
-.monitor-sample #p02 .tt-route-c { stroke: #f7faff; opacity: .9; }
-.monitor-sample #p02 .tt-route-d { stroke: #c7d5ff; opacity: .74; }
-.monitor-sample #p02 .tt-branch-a { stroke: #eef4ff; }
-.monitor-sample #p02 .tt-branch-b { stroke: #dce6ff; }
-.monitor-sample #p02 .tt-branch-c { stroke: #f5f8ff; opacity: .56; }
-.monitor-sample #p02 .tt-branch-d { stroke: #ccd9ff; opacity: .5; }
-.monitor-sample #p02 .tt-stations circle {
-  fill: #fff;
-  stroke: #dbe5ff;
-  stroke-width: 1.35;
-  opacity: .98;
-  filter: drop-shadow(0 1px 0 rgba(20, 28, 98, .06));
-}
-.monitor-sample #p02 .tt-stations .tt-merge {
-  fill: #eef4ff;
-  stroke: #fff;
-  stroke-width: 1.25;
-  opacity: .88;
-}
-.monitor-sample #p02 .tt-train {
-  fill: var(--brand);
-  stroke: #fff;
-  stroke-width: 1.35;
-  filter: drop-shadow(0 2px 3px rgba(17, 17, 98, .18));
-}
-.monitor-sample #p02 .tt-train-b,
-.monitor-sample #p02 .tt-train-d { fill: #8da2ed; }
-.monitor-sample #p02 .tt-top { fill: var(--brand); filter: drop-shadow(0 10px 20px rgba(17, 17, 98, .12)); }
-.monitor-sample #p02 .tt-city-b { fill: var(--brand); }
-.monitor-sample #p02 .tt-top-step { fill: #111162; opacity: .16; }
-.monitor-sample #p02 .tt-window { fill: #dbe4ff; opacity: .86; }
-.monitor-sample #p02 .tt-held-light { fill: #f3f7ff; opacity: .96; }
-.monitor-sample #p02 .tt-held-dark { fill: #aebfff; opacity: .72; }
-.monitor-sample #p02 .tt-legend {
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: 0;
+.monitor-sample #p02 .intro-rail {
+  position: sticky;
+  top: calc((var(--monitor-sample-h) - var(--monitor-figure-h)) / 2);
+  height: var(--monitor-figure-h);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: .55rem;
+  align-items: stretch;
   margin: 0;
-  color: var(--ink-soft);
-  font-family: var(--sans);
-  font-size: clamp(.42rem, calc(var(--monitor-sample-h) * .023), .54rem);
-  font-weight: 600;
-  letter-spacing: .12em;
-  line-height: 1;
-  text-transform: uppercase;
 }
-.monitor-sample #p02 .tt-legend span {
-  flex: 1;
-  height: 1px;
-  background: #dfe6f5;
+.monitor-sample #p02 .read-col {
+  padding-bottom: calc(var(--monitor-sample-h) * .46);
 }
-.monitor-sample #p02 .nest {
-  width: min(92%, calc(var(--monitor-sample-h) * 1.3));
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: clamp(.35rem, calc(var(--monitor-sample-h) * .03), .62rem);
+.monitor-sample #p02 .read-col .act {
+  min-height: calc(var(--monitor-sample-h) * .62);
 }
-.monitor-sample #p02 .ring {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: clamp(2.05rem, calc(var(--monitor-sample-h) * .17), 3.35rem);
-  border-radius: clamp(.62rem, calc(var(--monitor-sample-h) * .045), .9rem);
-  padding: clamp(.45rem, calc(var(--monitor-sample-h) * .04), .75rem) clamp(.65rem, calc(var(--monitor-sample-h) * .055), 1rem);
-  background: #eef3ff;
+.monitor-sample #p02 .read-col .act .prose {
+  max-width: 42ch;
 }
-.monitor-sample #p02 .r-org { width: 100%; background: #eef3ff; }
-.monitor-sample #p02 .r-sub { width: 82%; background: #d9e4ff; }
-.monitor-sample #p02 .r-top { width: 64%; background: var(--brand); }
-.monitor-sample #p02 .ringlab {
-  color: var(--ink-soft);
-  font-family: var(--display);
-  font-size: clamp(.8rem, calc(var(--monitor-sample-h) * .067), 1.22rem);
-  font-weight: 500;
-  letter-spacing: -.025em;
-  line-height: 1;
+.monitor-sample #p02 .intro-card {
+  border-radius: clamp(.7rem, calc(var(--monitor-sample-h) * .055), 1.15rem);
+  background: rgba(255, 255, 255, .82);
+  box-shadow: 0 .85rem 2.4rem rgba(20, 20, 58, .12), inset 0 0 0 1px rgba(255, 255, 255, .7);
 }
-.monitor-sample #p02 .r-sub .ringlab { color: var(--brand); }
-.monitor-sample #p02 .r-top .ringlab { color: #fff; }
+.monitor-sample #p02 .iscene {
+  padding: clamp(.65rem, calc(var(--monitor-sample-h) * .058), 1.15rem);
+}
+.monitor-sample #p02 .iscene[data-figure="charter"] .ik,
+.monitor-sample #p02 .iscene[data-figure="levels"] .ik {
+  margin: 0 0 6px;
+}
+.monitor-sample #p02 .st-svg {
+  height: calc(100% - clamp(4rem, calc(var(--monitor-sample-h) * .2), 7.25rem));
+}
+.monitor-sample #p02 .p02-iso {
+  max-height: none;
+}
 .monitor-sample #p02 .resp-top {
   display: flex;
   align-items: baseline;

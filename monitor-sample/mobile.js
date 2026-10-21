@@ -14,6 +14,7 @@
    no-ops when __MOBILE_DECK is false (it loads but returns immediately).
    ════════════════════════════════════════════════════════════════════════════════════════════ */
 (function () {
+  var M = window.FactsheetMotion || { ms: function (n, f) { return f; }, out: function (n, f) { return f * .65; } };
   // ── activation safety net ──────────────────────────────────────────────────────────────────
   // The inline gate in body-open.html runs during early parse; if any browser leaves it false on a
   // real phone (parse-time viewport quirks), re-decide HERE — mobile.js loads at the end of <body>,
@@ -58,14 +59,11 @@
   // ── frame ──
   var mdeck = el('div'); mdeck.id = 'mdeck'; mdeck.setAttribute('role', 'application');
   var stage = el('div', 'md-stage');
-  var stat = el('div', 'md-stat');
-  var hint = el('div', 'md-hint', 'Tik op een ring of label voor uitleg');
   var bar = el('div', 'md-bar');
   var track = el('div', 'md-track');
   var content = el('div', 'md-content');                 // stage + track as ONE unit, so a chapter slide
   var quoteOv = el('div', 'md-quote-ov');                 // a quote interjection that sweeps over the figure
   quoteOv.setAttribute('aria-hidden', 'true');
-  stage.appendChild(stat); stage.appendChild(hint);      // can translate the whole card+section together
   content.appendChild(stage); content.appendChild(track); content.appendChild(quoteOv);
   mdeck.appendChild(content); mdeck.appendChild(bar);
 
@@ -135,7 +133,11 @@
   }
 
   var chapter = -1;
-  qa(D, 'body > section[id]').forEach(function (sec) {
+  // descendant (not direct-child) selector: the route-transition wrapper (.route-page, #447)
+  // nests these one level deeper than body now. A direct-child selector silently matched ZERO
+  // sections here, leaving only the cover + colofon as "chapters" — so the very first flick
+  // jumped straight from the cover to the colofon (chapter 0 -> chapter 1, chapters.length===2).
+  qa(D, 'body section[id]').forEach(function (sec) {
     var sid = sec.id;
     if (sid === 'colofon') return;
     chapter++;
@@ -253,17 +255,18 @@
       if (!f || REDUCE) { apply(); return; }
       if (rec._t) clearTimeout(rec._t);
       var off = dir > 0 ? -1 : 1;                             // forward → slide out left, next in from right
-      f.style.transition = 'transform .19s cubic-bezier(.4,0,1,1)';
+      var OUT = M.out('--dur-2', 350);                     // c259 · shared motion tokens (app.js · FactsheetMotion)
+      f.style.transition = 'transform var(--dur-2-out) var(--ease-depart)';
       f.style.transform = 'translateX(' + (off * 106) + '%)';   // fully out (the card clips it) — a SLIDE, not a fade
       rec._t = setTimeout(function () {
         apply();                                              // change the beat while off-screen
         f.style.transition = 'none';
         f.style.transform = 'translateX(' + (-off * 106) + '%)';
         void f.offsetWidth;                                   // reflow so the settle animates
-        f.style.transition = 'transform .32s cubic-bezier(.16,.84,.32,1)';
+        f.style.transition = 'transform var(--dur-2) var(--ease-arrive)';
         f.style.transform = 'translateX(0)';
         rec._t = null;
-      }, 190);
+      }, OUT);
     };
     if (item.figType === 'radar') {
       var scr = q(sec, '.scrolly').cloneNode(true);
@@ -271,11 +274,14 @@
       qa(scr, '[id]').forEach(function (n) { n.removeAttribute('id'); });
       var cm = q(scr, '.cirkel-mount'); if (cm) cm.innerHTML = '';     // drop Konva children → fresh mount
       inner.appendChild(scr);
+      // no __cirkelWireGuide here: the tap-a-ring tooltip is a desktop hover-adjacent
+      // affordance (the reading guide popover) that doesn't fit the mobile frame's own
+      // beat-driven reveal — the chart still mounts and animates via data-active, just
+      // without the tap-for-a-tip interaction (and the hint text that invited it).
       rec.mount = function () {
         if (rec.mounted || !cm || !window.__cirkelMount) return;
         rec.mounted = true;
         window.__cirkelMount(cm);
-        if (window.__cirkelWireGuide) window.__cirkelWireGuide(cm);
       };
       rec.drive = function (state) { scr.setAttribute('data-active', state); };
     } else if (item.figType === 'dumbbell') {
@@ -287,6 +293,7 @@
       // can't be spatially opaque → flicker), the rows stay STABLE and a SINGLE highlighter bar TRAVELS
       // behind the active row — sliding from one row to the next on a beat change. More sophisticated, no flicker.
       var dumb = q(wrap, '.dumb');
+      qa(wrap, '.dumb-hl').forEach(function (n) { n.parentNode.removeChild(n); });   // the desktop bar (app.js) — the frame has its own
       var hl = dumb ? el('div', 'md-dumb-hl') : null;
       if (dumb && hl) dumb.insertBefore(hl, dumb.firstChild);
       rec.drive = function (state) {
@@ -337,7 +344,7 @@
     }
     node.appendChild(inner);     // mount the slide layer (number + figure) into the slot
     node.id = item.sid;          // carry the section id so #pXX-scoped section CSS styles the clone
-    stage.insertBefore(node, stat);
+    stage.appendChild(node);
     slots[item.chapter] = rec;
     return rec;
   }
@@ -362,10 +369,12 @@
     return node;
   }
   function applyStat(it, rec) {
-    var html = it.stat ? '<span class="n">' + it.stat.t + (it.stat.u ? '<span class="u">%</span>' : '') + '</span>' + (it.stat.s ? '<span class="s">' + it.stat.s + '</span>' : '') : '';
-    if (it.stat && rec && rec.instat) { rec.cardstat.innerHTML = html; stat.classList.remove('on'); }       // dumbbell: number in-flow
-    else if (it.stat && it.figType !== 'radar') { stat.innerHTML = html; stat.classList.add('on'); }         // figcard: corner overlay
-    else stat.classList.remove('on');
+    // the corner "companion stat" badge (top-left, unlabelled) read as a stray page/chapter marker and
+    // covered figure content — dropped. The dumbbell's in-flow stat (rec.cardstat, centred in the card)
+    // is a different, unambiguous element and stays.
+    if (it.stat && rec && rec.instat) {
+      rec.cardstat.innerHTML = '<span class="n">' + it.stat.t + (it.stat.u ? '<span class="u">%</span>' : '') + '</span>' + (it.stat.s ? '<span class="s">' + it.stat.s + '</span>' : '');
+    }
   }
   function driveBeat(it, rec) { if (it.figState != null && rec && rec.drive) rec.drive(it.figState); applyStat(it, rec); }
   function resetSlide(rec) { if (!rec) return; rec._hlInit = false; if (rec.figslide) { if (rec._t) { clearTimeout(rec._t); rec._t = null; } rec.figslide.style.transition = 'none'; rec.figslide.style.transform = 'translateX(0)'; rec.figslide.style.opacity = '1'; } }
@@ -381,8 +390,18 @@
     quoteOv.classList.remove('show');                                     // always leave the state clean (not shown)
     // a flick sweeps it out the way you flicked (inline overrides the class); auto-dismiss sweeps it back
     // to its enter side (the class's hidden transform). Either way it's gone.
-    if (flickDx != null) { quoteOv.style.transition = 'transform .24s cubic-bezier(.4,0,1,1)'; quoteOv.style.transform = 'translateX(' + (flickDx < 0 ? -112 : 112) + '%)'; }
+    if (flickDx != null) { quoteOv.style.transition = 'transform var(--dur-2-out) var(--ease-depart)'; quoteOv.style.transform = 'translateX(' + (flickDx < 0 ? -112 : 112) + '%)'; }
   }
+  function fitQuote() {
+    try {
+      var qin = quoteOv.firstChild, qq = qin && qin.querySelector('.md-quote');
+      if (!qq) return;
+      var qfs = parseFloat(getComputedStyle(qq).fontSize) || 22;
+      for (var qn = 0; qn < 14 && qin.scrollHeight > qin.clientHeight + 1 && qfs > 15; qn++) { qfs -= 1; qq.style.fontSize = qfs + 'px'; }
+    } catch (e) {}
+  }
+  // warm the quote serif early (the hidden desktop deck never asks for it on a phone)
+  if (D.fonts && D.fonts.load) D.fonts.load('italic 400 20px "Libre Baskerville"').catch(function () {});
   function maybeQuote(it) {
     dismissQuote();
     if (!it.quotes || !it.quotes.length) return;
@@ -399,6 +418,12 @@
         (quote.src ? '<span class="md-quote-src">' + quote.src + '</span>' : '') +
         '<span class="md-quote-flick">veeg weg</span>' +
       '</div>';
+      // c258 · fit, don't scroll: step the quote's type down until the whole voice fits the panel
+      // (a long one — p05's three questions — used to overflow into an inner scrollbar on small phones).
+      // Fit again once the serif has loaded: on phones the desktop deck is hidden, so the quote font
+      // may only arrive now, and the fallback measures shorter than the real thing.
+      fitQuote();
+      if (D.fonts && D.fonts.load) D.fonts.load('italic 400 20px "Libre Baskerville"').then(fitQuote, function () {});
       void quoteOv.offsetWidth;
       quoteOv.classList.add('show'); quoteOv.style.pointerEvents = 'auto'; quoteUp = true;
       seenQuotes[quote.id] = true;
@@ -423,7 +448,6 @@
     // highlighter bar travels (handled inside rec.drive). Radar: morph in place. So only the metro slides.
     if (rec && rec.slide && it.figType === 'ladder') rec.slide(dir, function () { driveBeat(it, rec); });
     else driveBeat(it, rec);
-    hint.classList.toggle('on', it.figType === 'radar');
     paintBar(it);
     maybeQuote(it);                                  // a beat's quote interjection sweeps in once you settle here
   }
@@ -445,7 +469,6 @@
     current = atoms[b];
     var it = items[current];
     driveBeat(it, rec);
-    hint.classList.toggle('on', it.figType === 'radar');
     paintBar(it);
     maybeQuote(it);                                  // the LANDING beat may carry a quote (e.g. a chapter
                                                      // whose FIRST beat has one) — show it, like any beat
@@ -484,25 +507,34 @@
     resetSlide(slots[chapters[curCh].ch]);
     animating = true;
     var out = dir > 0 ? -100 : 100;
-    content.style.transition = 'transform .24s cubic-bezier(.4,0,1,1)';
+    var OUT = M.out('--dur-2', 350), IN = M.ms('--dur-2', 350);
+    content.style.transition = 'transform var(--dur-2-out) var(--ease-depart)';
     content.style.transform = 'translateY(' + out + '%)';              // current chapter slides out
     setTimeout(function () {
       enterChapter(ni, dir < 0);                                       // rebuild off-screen; going back → land at its last beat
       content.style.transition = 'none';
       content.style.transform = 'translateY(' + (-out) + '%)';         // reposition the new chapter on the far side
       void content.offsetWidth;
-      content.style.transition = 'transform .34s cubic-bezier(.16,.84,.32,1)';
+      content.style.transition = 'transform var(--dur-2) var(--ease-arrive)';
       content.style.transform = 'translateY(0)';                       // new chapter slides into place
-      setTimeout(function () { animating = false; onScroll(); }, 350);
-    }, 240);
+      setTimeout(function () { animating = false; onScroll(); }, IN + 10);
+    }, OUT);
   }
-  // swipe the card (figure stage) up/down → jump a whole chapter, wherever you are in its beats
+  // swipe the card (figure stage) up/down → jump a whole chapter, wherever you are in its beats.
+  // Radar charts (p05/p08) are excepted: their beats step through a progressive data reveal, and a
+  // stray swipe on the chart itself skipping straight to the next chapter would blow past that
+  // narrative. On a radar beat the stage swipe is a no-op — only the track's own edge-flick (which
+  // walks the reveal one beat/section at a time, same as any other chapter) can advance from there.
   var sx = 0, sy = 0, sdone = false;
   stage.addEventListener('touchstart', function (e) { var t = e.changedTouches[0]; sx = t.clientX; sy = t.clientY; sdone = false; }, { passive: true });
   stage.addEventListener('touchend', function (e) {
     if (sdone || animating) return;
     var t = e.changedTouches[0], dy = t.clientY - sy, dx = t.clientX - sx;
-    if (Math.abs(dy) > 40 && Math.abs(dy) > Math.abs(dx) * 1.3) { sdone = true; jumpChapter(dy < 0 ? 1 : -1); }   // up → next, down → prev
+    if (Math.abs(dy) > 40 && Math.abs(dy) > Math.abs(dx) * 1.3) {
+      sdone = true;
+      var cur = items[current];
+      if (!cur || cur.figType !== 'radar') jumpChapter(dy < 0 ? 1 : -1);   // up → next, down → prev
+    }
   }, { passive: true });
   // flick past the first/last beat on the text track → retreat/advance a chapter (the natural "keep going")
   var tx = 0, ty = 0;
