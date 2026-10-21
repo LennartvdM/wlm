@@ -1,0 +1,432 @@
+{
+  "_doc": "Publicaties van Wilma Henderikse. title = letterlijk zoals op de oorspronkelijke site; year/type/themes/authors komen uit de PDF zelf. type: Monitor | Factsheet | Rapport | Artikel | Handreiking. themes: top | diversiteit | leeftijd | werkzorg | beleid. Een nieuwe toevoegen: PDF in publicaties/pdf/, regel hier, dan `python3 scripts/make-covers.py` en `node scripts/build-publicaties.mjs`.",
+  "themes": {
+    "top": "Vrouwen naar de top",
+    "diversiteit": "Diversiteit & inclusie",
+    "leeftijd": "Leeftijd & arbeid",
+    "werkzorg": "Werk & zorg",
+    "beleid": "Emancipatiebeleid"
+  },
+  "types": [
+    "Monitor",
+    "Factsheet",
+    "Rapport",
+    "Artikel",
+    "Handreiking"
+  ],
+  "items": [
+    {
+      "title": "Wie vooruit wil moet doortrappen, Monitor Talent naar de Top 2024",
+      "year": 2025,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "authors": "Nel Verhoeven, Wilma Henderikse",
+      "file": "monitor-talent-naar-de-top-2024.pdf"
+    },
+    {
+      "title": "Het verschil maken. Juist nu Factsheet Monitor Talent naar de Top 2020",
+      "year": 2020,
+      "type": "Factsheet",
+      "themes": [
+        "top"
+      ],
+      "file": "monitor-talent-naar-de-top-2020-factsheet.pdf"
+    },
+    {
+      "title": "Het verschil maken. Juist nu Monitor Talent naar de Top 2020",
+      "year": 2020,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "file": "monitor-talent-naar-de-top-2020.pdf"
+    },
+    {
+      "title": "Het kan wel! Monitor Talent naar de Top 2017",
+      "year": 2018,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "authors": "Babette Pouwels, Wilma Henderikse",
+      "file": "monitor-talent-naar-de-top-2017.pdf"
+    },
+    {
+      "title": "Scherven Brengen Geluk",
+      "year": 2018,
+      "type": "Rapport",
+      "themes": [
+        "top"
+      ],
+      "file": "scherven-brengen-geluk.pdf"
+    },
+    {
+      "title": "Diversiteit en kwaliteit, een uitdagende relatie Tijdschrift voor HRM",
+      "year": 2017,
+      "type": "Artikel",
+      "themes": [
+        "diversiteit"
+      ],
+      "url": "http://vandoornehuiskes.eu/wp-content/uploads/2017/08/Diversiteit-en-kwaliteit-een-uitdagende-relatie-Tijdschrift-voor-HRM.pdf"
+    },
+    {
+      "title": "Een beetje beter maar nog lang niet voldoende, Bedrijvenmonitor 2017",
+      "year": 2017,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "authors": "Babette Pouwels, Wilma Henderikse",
+      "file": "bedrijvenmonitor-2017.pdf"
+    },
+    {
+      "title": "Highlights Female career App Januari 2017",
+      "year": 2017,
+      "type": "Factsheet",
+      "themes": [
+        "top"
+      ],
+      "file": "highlights-female-career-app-2017-01.pdf"
+    },
+    {
+      "title": "Highlights Female Career App Juni 2017",
+      "year": 2017,
+      "type": "Factsheet",
+      "themes": [
+        "top"
+      ],
+      "file": "highlights-female-career-app-2017-06.pdf"
+    },
+    {
+      "title": "In de pas of uit de pas, Internationaal vergelijkende studie emancipatie",
+      "year": 2017,
+      "type": "Rapport",
+      "themes": [
+        "beleid"
+      ],
+      "url": "http://vandoornehuiskes.eu/wp-content/uploads/2017/08/In-de-pas-of-uit-de-pas-Internationaal-vergelijkende-studie-emancipatie.pdf"
+    },
+    {
+      "title": "Over onbenut talent en verloren productiviteit, Monitor LNVH 2017",
+      "year": 2017,
+      "type": "Rapport",
+      "themes": [
+        "top"
+      ],
+      "file": "monitor-lnvh-2017.pdf"
+    },
+    {
+      "title": "Daadkracht werkt!, Monitor Talent naar de top 2016",
+      "year": 2016,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "file": "monitor-talent-naar-de-top-2016.pdf"
+    },
+    {
+      "title": "Highlights Female career App September 2016",
+      "year": 2016,
+      "type": "Factsheet",
+      "themes": [
+        "top"
+      ],
+      "file": "highlights-female-career-app-2016-09.pdf"
+    },
+    {
+      "title": "Waiting on the World to change”, Bedrijvenmonitor 2016",
+      "year": 2016,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "authors": "Wilma Henderikse, Babette Pouwels",
+      "file": "bedrijvenmonitor-2016.pdf"
+    },
+    {
+      "title": "Waiting on the World to change”, Bedrijvenmonitor 2016, factsheet",
+      "year": 2016,
+      "type": "Factsheet",
+      "themes": [
+        "top"
+      ],
+      "authors": "Wilma Henderikse, Babette Pouwels",
+      "file": "bedrijvenmonitor-2016-factsheet.pdf"
+    },
+    {
+      "title": "Charterbedrijven zetten de toon ambitie en commitment werken! Monitor Talent naar de top 2015",
+      "year": 2015,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "file": "monitor-talent-naar-de-top-2015.pdf"
+    },
+    {
+      "title": "Door het glazen plafond, Naar effectieve maatregelen voor meer vrouwen in de top",
+      "year": 2015,
+      "type": "Artikel",
+      "themes": [
+        "top"
+      ],
+      "authors": "Ans Merens, Wilma Henderikse, Babette Pouwels",
+      "file": "door-het-glazen-plafond.pdf"
+    },
+    {
+      "title": "Goede voorbeelden culturele diversiteit en good principles toegepast in de praktijk",
+      "year": 2015,
+      "type": "Rapport",
+      "themes": [
+        "diversiteit"
+      ],
+      "authors": "Annemieke van Beek, Wilma Henderikse",
+      "file": "goede-voorbeelden-culturele-diversiteit.pdf"
+    },
+    {
+      "title": "Literatuurverkenning culturele diversiteit",
+      "year": 2015,
+      "type": "Rapport",
+      "themes": [
+        "diversiteit"
+      ],
+      "file": "literatuurverkenning-culturele-diversiteit.pdf"
+    },
+    {
+      "title": "Topvrouwen in de wachtkamer Bedrijvenmonitor 2012-2015",
+      "year": 2015,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "file": "bedrijvenmonitor-2012-2015.pdf"
+    },
+    {
+      "title": "Topvrouwen in de wachtkamer, Factsheet Bedrijvenmonitor 2012-2015",
+      "year": 2015,
+      "type": "Factsheet",
+      "themes": [
+        "top"
+      ],
+      "file": "bedrijvenmonitor-2012-2015-factsheet.pdf"
+    },
+    {
+      "title": "Werken aan gelijke kansen en non-discriminatie",
+      "year": 2015,
+      "type": "Rapport",
+      "themes": [
+        "diversiteit"
+      ],
+      "file": "werken-aan-gelijke-kansen-en-non-discriminatie.pdf"
+    },
+    {
+      "title": "De aanhouder wint, Monitor Talent naar de top 2014",
+      "year": 2014,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "authors": "Babette Pouwels, Wilma Henderikse",
+      "file": "monitor-talent-naar-de-top-2014.pdf"
+    },
+    {
+      "title": "Talent telt in de top, Monitor Talent naar de top 2013",
+      "year": 2013,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "authors": "Babette Pouwels, Wilma Henderikse",
+      "file": "monitor-talent-naar-de-top-2013.pdf"
+    },
+    {
+      "title": "Waar een wil is, is een weg, Bedrijvenmonitor 2013",
+      "year": 2013,
+      "type": "Factsheet",
+      "themes": [
+        "top"
+      ],
+      "authors": "Wilma Henderikse, Babette Pouwels",
+      "file": "bedrijvenmonitor-2013-factsheet.pdf"
+    },
+    {
+      "title": "Diversiteit en kwaliteit verbinden_VDH",
+      "year": 2012,
+      "type": "Rapport",
+      "themes": [
+        "diversiteit"
+      ],
+      "file": "diversiteit-en-kwaliteit-verbinden.pdf"
+    },
+    {
+      "title": "Emancipatiegezindheid van leidinggevenden, In Emancipatiemonitor 2012",
+      "year": 2012,
+      "type": "Artikel",
+      "themes": [
+        "beleid"
+      ],
+      "file": "emancipatiegezindheid-van-leidinggevenden.pdf"
+    },
+    {
+      "title": "Het zingt rond, Succes door aanbod en kwaliteit van vrouwen, Monitor Talent naar de top 2012",
+      "year": 2012,
+      "type": "Monitor",
+      "themes": [
+        "top"
+      ],
+      "file": "monitor-talent-naar-de-top-2012.pdf"
+    },
+    {
+      "title": "Diversiteit en kwaliteit, Een literatuuronderzoek naar nieuwe bevindingen",
+      "year": 2011,
+      "type": "Rapport",
+      "themes": [
+        "diversiteit"
+      ],
+      "authors": "Annemieke van Beek, Wilma Henderikse",
+      "file": "diversiteit-en-kwaliteit-literatuuronderzoek.pdf"
+    },
+    {
+      "title": "Rijk met Leeftijd, aan de slag met leeftijdsbewust beleid bij de rijksoverheid",
+      "year": 2011,
+      "type": "Handreiking",
+      "themes": [
+        "leeftijd"
+      ],
+      "file": "rijk-met-leeftijd.pdf"
+    },
+    {
+      "title": "Working and ageing, Do European employers support longer working lives Cedefop",
+      "year": 2011,
+      "type": "Artikel",
+      "themes": [
+        "leeftijd"
+      ],
+      "file": "working-and-ageing-cedefop.pdf"
+    },
+    {
+      "title": "Werkende vaders, strategieën voor vaders die werk en zorg willen combineren",
+      "year": 2010,
+      "type": "Rapport",
+      "themes": [
+        "werkzorg"
+      ],
+      "file": "werkende-vaders.pdf"
+    },
+    {
+      "title": "Werkgevers en deeltijd, verdiepingsonderzoek voor SCP naar uitbreiding van de arbeidsduur van deeltijders",
+      "year": 2009,
+      "type": "Rapport",
+      "themes": [
+        "werkzorg"
+      ],
+      "authors": "Wilma Henderikse, Annemieke van Beek, Cora de Olde",
+      "file": "werkgevers-en-deeltijd.pdf"
+    },
+    {
+      "title": "Alle troeven in handen, veelbelovende initiatieven voor emancipatie en participatie",
+      "year": 2008,
+      "type": "Rapport",
+      "themes": [
+        "beleid"
+      ],
+      "file": "alle-troeven-in-handen.pdf"
+    },
+    {
+      "title": "Artikel vrouwen in de academische top UMC´s",
+      "year": 2008,
+      "type": "Artikel",
+      "themes": [
+        "top"
+      ],
+      "authors": "Anneke van Doorne-Huiskes, Annemieke van Beek",
+      "file": "vrouwen-in-de-academische-top-umcs.pdf"
+    },
+    {
+      "title": "Benchmark loopbaanontwikkeling vrouwelijk-mannelijk medisch en medisch wetenschappelijk personeel",
+      "year": 2008,
+      "type": "Rapport",
+      "themes": [
+        "top"
+      ],
+      "file": "benchmark-loopbaanontwikkeling-medisch-personeel.pdf"
+    },
+    {
+      "title": "werkboek Mentoring Meester gezel",
+      "year": 2008,
+      "type": "Handreiking",
+      "themes": [
+        "leeftijd"
+      ],
+      "file": "werkboek-mentoring-meester-gezel.pdf"
+    },
+    {
+      "title": "Artsen van de toekomst, best practices in flexibele arrangementen",
+      "year": 2007,
+      "type": "Rapport",
+      "themes": [
+        "werkzorg"
+      ],
+      "file": "artsen-van-de-toekomst.pdf"
+    },
+    {
+      "title": "Diversiteit geïnventariseerd",
+      "year": 2007,
+      "type": "Rapport",
+      "themes": [
+        "diversiteit"
+      ],
+      "authors": "Wilma Henderikse, Anneke van Doorne-Huiskes",
+      "file": "diversiteit-geinventariseerd.pdf"
+    },
+    {
+      "title": "Dealing with an ageing labour force what do European employers expect and do",
+      "year": 2006,
+      "type": "Rapport",
+      "themes": [
+        "leeftijd"
+      ],
+      "authors": "Harry van Dalen, Kène Henkens, Wilma Henderikse",
+      "file": "dealing-with-an-ageing-labour-force.pdf"
+    },
+    {
+      "title": "Gender Mainstreaming an international analysis",
+      "year": 2006,
+      "type": "Rapport",
+      "themes": [
+        "beleid"
+      ],
+      "authors": "Anneke van Doorne-Huiskes, Wilma Henderikse, Wieteke Conen",
+      "file": "gender-mainstreaming.pdf"
+    },
+    {
+      "title": "Sleutels tot succes, hoe organisaties de deur naar de top voor vrouwen kunnen openen",
+      "year": 2004,
+      "type": "Rapport",
+      "themes": [
+        "top"
+      ],
+      "file": "sleutels-tot-succes.pdf"
+    },
+    {
+      "title": "Genderbewust personeelsbeleid bij de overheid",
+      "year": 2003,
+      "type": "Rapport",
+      "themes": [
+        "beleid"
+      ],
+      "authors": "Wilma Henderikse",
+      "file": "genderbewust-personeelsbeleid-bij-de-overheid.pdf"
+    },
+    {
+      "title": "101 vragen over vrouwen en techniek",
+      "year": 2001,
+      "type": "Handreiking",
+      "themes": [
+        "beleid"
+      ],
+      "file": "101-vragen-over-vrouwen-en-techniek.pdf"
+    }
+  ]
+}

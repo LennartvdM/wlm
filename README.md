@@ -2,30 +2,42 @@
 
 Persoonlijke website van Wilma Henderikse — maatschappelijk ondernemer, onderzoeker, auteur.
 
-Volledig statische site, van de grond af opnieuw opgebouwd (juli 2026) op basis van het
-materiaal van de oorspronkelijke WordPress/Divi-site. De oude site-mirror is uit de
-werkkopie verwijderd, maar blijft beschikbaar in de git-historie.
+Volledig statische site, geen framework en geen build voor de pagina's zelf. De homepage is
+een scrolly in hoofdstukken (`assets/js/site.js`), met daarin, inline en op volle breedte,
+een levend fragment van de *Monitor Talent naar de Top 2025*.
 
 ## Structuur
 
 ```
-index.html               Homepage (hero, mijn werk + omslagcollage, over Wilma, contact)
-publicaties/index.html   Doorzoekbare publicatielijst, in de oorspronkelijke volgorde
-publicaties/pdf/         41 publicaties als pdf, met leesbare bestandsnamen
-assets/css/style.css     Eén stylesheet, geen frameworks
-assets/js/site.js        E-mail-onthulling + lijstfilter (progressive enhancement)
-assets/fonts/            Montserrat (woff2, gesubset, self-hosted)
-assets/img/              Geoptimaliseerde afbeeldingen + favicon
+index.html                   Homepage: hero, Monitor-fragment, mijn werk + omslagbento,
+                             citaat, over Wilma, contact
+publicaties/index.html       GEGENEREERD uit publicaties/publicaties.json (zie hieronder)
+publicaties/publicaties.json De publicatielijst: titel (letterlijk, zoals op de oude site),
+                             jaar, soort, thema's, auteurs, bestand
+publicaties/pdf/             De publicaties als pdf, met leesbare bestandsnamen
+publicaties/covers/          GEGENEREERD: de voorkant van elke pdf als webp
+publicaties/pdf-meta.json    GEGENEREERD: paginatelling en bestandsgrootte per pdf
+monitor-sample/              GESYNCHRONISEERD: snapshot van de Monitor-deck (zie VERSION)
+assets/css/style.css         Eén stylesheet; tokens bovenaan, het Monitor-blok apart
+assets/js/site.js            Scrolly, bento-carrousel, e-mail-onthulling, publicatiefilter
+assets/fonts/                Archivo (variabel, woff2, latin + latin-ext, zelf gehost)
+assets/img/                  Portret, lepelaars, bento-omslagen, favicon
+scripts/                     De drie generatoren (hieronder)
+_reference/                  Screenshots van de oorspronkelijke WordPress-site
 ```
 
 ## Uitgangspunten
 
-- **Alle tekst is van Wilma zelf.** Koppen, bio, citaat en publicatietitels zijn letterlijk overgenomen van de oorspronkelijke site; er is geen redactionele tekst toegevoegd.
-- **Geen afhankelijkheden.** Puur HTML/CSS/JS; werkt op elke statische host (GitHub Pages, Netlify, …).
-- **Zelf-gehost lettertype.** Montserrat is gesubset naar latin/latin-ext en lokaal opgenomen; geen Google Fonts-requests.
-- **E-mailadres niet in de DOM.** Het adres wordt pas na een klik uit tekencodes samengesteld (spam-oogst tegengaan).
-- **Palet uit het eigen materiaal.** Het warme geel komt van de oorspronkelijke site; diep groen en vermiljoenrood uit het portret en de omslagen van de monitors.
-- **Zonder JavaScript blijft alles bruikbaar**; het filter en de e-mailknop zijn extra's.
+- **De teksten zijn van Wilma zelf.** Rollen, de zin over haar werk, de bio, het citaat en de
+  publicatietitels staan letterlijk zoals op de oorspronkelijke site. De enige toegevoegde
+  tekst zijn labels ("Mijn werk", "Contact") en de inleiding op de publicatiepagina.
+- **Eén lettertype, kleur in tonen.** Archivo in gematigde maten en gewichten. Het blad is
+  lichtteal; secties zijn lagen van teal en geel met kleine stappen ertussen; twee bijna-zwarte
+  teal banden (citaat, footer) en geel als klein merkteken (het streepje boven koppen).
+- **Geen externe requests.** Lettertype zelf gehost, geen Google Fonts, geen analytics.
+- **E-mailadres niet in de DOM**: pas na een klik samengesteld uit tekencodes.
+- **Zonder JavaScript blijft alles bruikbaar**: de publicatielijst staat er compleet, het
+  filter en de e-mailknop zijn extra's.
 
 ## Lokaal bekijken
 
@@ -33,4 +45,28 @@ assets/img/              Geoptimaliseerde afbeeldingen + favicon
 python3 -m http.server 8000
 ```
 
-en open http://localhost:8000/.
+## Publicatie toevoegen
+
+1. Zet de pdf in `publicaties/pdf/` (korte, leesbare bestandsnaam, geen rare tekens).
+2. Voeg een regel toe aan `publicaties/publicaties.json` (de velden staan bovenin uitgelegd).
+3. `python3 scripts/make-covers.py` — rendert de voorkant en legt paginatelling en grootte
+   vast (vereist poppler en Pillow). Heeft de pdf geen echte kaft, dan tekent de pagina zelf een
+   typografische cover.
+4. `node scripts/build-publicaties.mjs` — schrijft `publicaties/index.html`.
+5. Commit pdf, json, cover, meta en de gegenereerde pagina.
+
+## De Monitor bijwerken
+
+De deck wordt gebouwd in de repo van monitortalent.nl (`Vragenlijst-Executive-Search`,
+`factsheet-deck/`). Bij een nieuwe versie:
+
+```
+node scripts/sync-monitor.mjs --from ../Vragenlijst-Executive-Search          # versie uit deck.json
+node scripts/sync-monitor.mjs --from ../Vragenlijst-Executive-Search --rev c272
+```
+
+Dit kopieert de snapshot naar `monitor-sample/` en haalt uit de deck-bron het figuurscript en
+de stijlen van de Inleiding (`monitor-sample/p02.js`, `p02.css`): de trap, de drie niveaus en
+de vrouwtjes die van overal het scherm op springen. `site.js` knipt `#p02` en `#p05` uit de
+snapshot en draait er zijn eigen pager over; het figuurscript draait op de homepage zelf, zodat
+de vrouwtjes niet door het stage worden afgeknipt. Bewerk `monitor-sample/` niet met de hand.
