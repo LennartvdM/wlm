@@ -76,11 +76,10 @@ const html = `<!DOCTYPE html>
 
 <header class="site-header">
   <div class="wrap">
-    <a class="wordmark" href="../"><span class="wordmark__mark" aria-hidden="true"></span>Wilma Henderikse</a>
+    <a class="wordmark" href="../">Wilma Henderikse<span class="dot">.</span></a>
     <nav class="site-nav" aria-label="Hoofdmenu">
       <a href="../#werk">Mijn werk</a>
       <a href="./" aria-current="page">Publicaties</a>
-      <a href="../#laatste-project">Monitor 2025</a>
       <a href="../#over">Over Wilma</a>
       <a href="../#contact">Contact</a>
     </nav>
@@ -90,12 +89,9 @@ const html = `<!DOCTYPE html>
 <main>
 
   <div class="page-head">
-    <div class="wrap section__grid">
-      <p class="section__label">Publicaties</p>
-      <div class="section__body">
-        <h1 class="page-title">Publicaties</h1>
-        <p class="page-lede">Monitors, rapporten, artikelen en handreikingen over gender, diversiteit, leeftijd en de combinatie van werk en zorg, ${first}–${last}. Alle documenten zijn als PDF te openen en te downloaden.</p>
-      </div>
+    <div class="wrap">
+      <h1>Publicaties</h1>
+      <p class="intro">Monitors, rapporten, artikelen en handreikingen over gender, diversiteit, leeftijd en de combinatie van werk en zorg, ${first}–${last}. Alle documenten zijn als PDF te openen en te downloaden.</p>
     </div>
   </div>
 
@@ -128,8 +124,8 @@ ${items.map(card).join('\n')}
 
 <footer class="site-footer">
   <div class="wrap">
-    <span class="site-footer__name">© <span id="jaar">${new Date().getFullYear()}</span> Wilma Henderikse</span>
-    <span class="site-footer__links"><a href="../#laatste-project">Monitor Talent naar de Top 2025</a> · <a href="https://www.researchgate.net/profile/Wilma_Henderikse" rel="noopener">ResearchGate</a></span>
+    <span>© <span id="jaar">${new Date().getFullYear()}</span> Wilma Henderikse</span>
+    <span><a href="../">Home</a> · <a href="https://www.researchgate.net/profile/Wilma_Henderikse" rel="noopener">ResearchGate</a></span>
   </div>
 </footer>
 
