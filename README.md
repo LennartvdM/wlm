@@ -52,7 +52,7 @@ python3 -m http.server 8000
 3. `python3 scripts/make-covers.py` — rendert de voorkant en legt paginatelling en grootte
    vast (vereist poppler en Pillow). Heeft de pdf geen echte kaft, dan tekent de pagina zelf een
    typografische cover.
-4. `node scripts/build-publicaties.mjs` — schrijft `publicaties/index.html` en de omslagcarrousel
+4. `node scripts/build-publicaties.mjs` — schrijft `publicaties/index.html` en de bento-carrousel
    op de homepage (tussen de `marquee`-markers in `index.html`).
 5. Commit pdf, json, cover, meta en de gegenereerde pagina.
 

@@ -137,25 +137,61 @@ ${items.map(card).join('\n')}
 writeFileSync(join(ROOT, 'publicaties', 'index.html'), html);
 console.log(`publicaties/index.html: ${items.length} publicaties, ${first}–${last}`);
 
-// ── the cover marquee on the homepage: every publication with a real cover, newest first,
-//    the row twice over so the CSS loop is seamless ─────────────────────────────────────
-// portrait covers only (the landscape factsheets are single A4 pages, not covers), one per title
+// ── the cover bento on the homepage: every portrait cover (one per title) as tiles of
+//    varying size in a two-row strip that slides past. Sizes are drawn by a seeded PRNG,
+//    so the pattern is random-looking but identical on every build and needs no JS.
+//    The strip is packed twice over, the second copy offset, so the CSS loop is seamless. ──
+const sameCover = (a, b) => {
+  const norm = (t) => t.toLowerCase().replace(/\bfactsheet\b,?/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  return norm(a) === norm(b);
+};
 const withCover = items
   .filter((p) => p.file && meta[p.file] && !meta[p.file].cover.plain && meta[p.file].cover.h > meta[p.file].cover.w * 1.05)
-  .filter((p, i, all) => all.findIndex((q) => q.title.replace(/ factsheet.*$/i, '') === p.title.replace(/ factsheet.*$/i, '')) === i);
-const marqueeCard = (p, copy) => {
-  const m = meta[p.file];
-  return `      <a class="marquee__card" href="publicaties/pdf/${encodeURIComponent(p.file)}"${copy ? ' tabindex="-1" aria-hidden="true"' : ''}>
-        <img src="publicaties/covers/${encodeURIComponent(p.file.replace(/\.pdf$/i, ''))}.webp" width="${m.cover.w}" height="${m.cover.h}" alt="${copy ? '' : esc(p.title)}" loading="lazy" decoding="async">
-        <span class="card-title">${esc(p.title)}</span>
+  .filter((p, i, all) => all.findIndex((q) => sameCover(q.title, p.title)) === i);
+const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const rand = rng(withCover.length * 7919 + 11);
+const SIZES = [['tall', 1, 2, .38], ['big', 2, 2, .17], ['small', 1, 1, .25], ['wide', 2, 1, .2]];
+const draw = () => { let r = rand(); for (const s of SIZES) { r -= s[3]; if (r <= 0) return s; } return SIZES[0]; };
+// pack into two rows; cols[r] = next free column of row r
+const cols = [0, 0];
+const tiles = [];
+let prevShape = null;
+withCover.forEach((p, n) => {
+  let [name, w, h] = draw();
+  if (prevShape === name && name !== 'small') [name, w, h] = SIZES[2];   // never two of the same big shape in a row
+  if (n === 0) [name, w, h] = SIZES[1];                              // the newest opens the strip, big
+  let col, row;
+  // a two-row tile needs both rows level; if they are not, this cover fills the shorter row
+  // instead (as a small or wide tile), so the strip never has a hole
+  if (h === 2 && cols[0] !== cols[1]) {
+    w = Math.min(2, Math.abs(cols[0] - cols[1])); h = 1; name = w === 2 ? 'wide' : 'small';
+  }
+  if (h === 2) { col = cols[0]; row = 0; cols[0] = cols[1] = col + w; }
+  else { row = cols[0] <= cols[1] ? 0 : 1; col = cols[row]; cols[row] += w; }
+  tiles.push({ p, name, col, row, w, h });
+  prevShape = name;
+});
+// even out the two rows at the end, so the loop closes without a hole
+while (cols[0] !== cols[1]) {
+  const row = cols[0] < cols[1] ? 0 : 1, w = Math.min(2, Math.abs(cols[0] - cols[1]));
+  const p = withCover[tiles.length % withCover.length];
+  tiles.push({ p, name: w === 2 ? 'wide' : 'small', col: cols[row], row, w, h: 1 });
+  cols[row] += w;
+}
+const totalCols = cols[0];
+const tile = (t, copy) => {
+  const m = meta[t.p.file];
+  return `      <a class="bento-tile is-${t.name}" style="grid-area:${t.row + 1} / ${t.col + 1 + (copy ? totalCols : 0)} / span ${t.h} / span ${t.w}" href="publicaties/pdf/${encodeURIComponent(t.p.file)}"${copy ? ' tabindex="-1" aria-hidden="true"' : ''}>
+        <img src="publicaties/covers/${encodeURIComponent(t.p.file.replace(/\.pdf$/i, ''))}.webp" width="${m.cover.w}" height="${m.cover.h}" alt="${copy ? '' : esc(t.p.title)}" loading="lazy" decoding="async">
+        <span class="card-title">${esc(t.p.title)}</span>
       </a>`;
 };
 const marquee = `    <!-- marquee:start — GEGENEREERD door scripts/build-publicaties.mjs -->
-    <div class="marquee" data-site-snap data-site-snap-free aria-label="Omslagen van publicaties">
-      <div class="marquee__track" style="--marquee-s:${Math.round(withCover.length * 6)}s">
-${withCover.map((p) => marqueeCard(p, false)).join('\n')}
-      <span class="marquee__copy" style="display:contents">
-${withCover.map((p) => marqueeCard(p, true)).join('\n')}
+    <div class="bento-marquee" data-site-snap data-site-snap-free aria-label="Omslagen van publicaties">
+      <div class="bento-track" style="--cols:${totalCols};--marquee-s:${Math.round(totalCols * 4.5)}s">
+${tiles.map((t) => tile(t, false)).join('\n')}
+      <span class="bento-copy" style="display:contents">
+${tiles.map((t) => tile(t, true)).join('\n')}
       </span>
       </div>
     </div>
@@ -165,4 +201,4 @@ const home = readFileSync(homePath, 'utf8');
 const re = /    <!-- marquee:start[\s\S]*?<!-- marquee:end -->/;
 if (!re.test(home)) { console.error('marquee markers not found in index.html'); process.exit(1); }
 writeFileSync(homePath, home.replace(re, marquee));
-console.log(`index.html: marquee met ${withCover.length} omslagen`);
+console.log(`index.html: bento-carrousel met ${withCover.length} omslagen in ${totalCols} kolommen`);

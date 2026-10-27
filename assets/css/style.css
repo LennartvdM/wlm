@@ -1293,74 +1293,82 @@ body.home-scrolly .section.tinted {
 
 /* --- themes -------------------------------------------------------------- */
 
-/* --- cover marquee: every cover, sliding past slowly ----------------------
-   Two copies of the row in one track; the track moves exactly one row-width,
-   so the loop is seamless. Pauses under the pointer or keyboard focus. With
-   reduced motion it is a plain row you scroll sideways yourself. */
+/* --- cover bento that slides: tiles of varying size in a two-row strip ---------
+   The generator packs the tiles (grid-area inline) twice over; the track moves exactly
+   one strip-width, so the loop is seamless. Pauses under the pointer or keyboard focus.
+   With reduced motion it is a plain strip you scroll sideways yourself. */
 
-.marquee {
+.bento-marquee {
+  --u: clamp(6.5rem, 17vh, 10.5rem);   /* one grid unit: the small tile */
+  --g: .75rem;
   position: relative;
   overflow: hidden;
   padding-block: .5rem;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
 }
-.marquee__track {
-  display: flex;
-  gap: 1rem;
+.bento-track {
+  display: grid;
+  grid-template-rows: repeat(2, var(--u));
+  grid-template-columns: repeat(calc(var(--cols) * 2), var(--u));
+  gap: var(--g);
   width: max-content;
-  animation: marquee var(--marquee-s, 120s) linear infinite;
+  animation: bento-slide var(--marquee-s, 120s) linear infinite;
 }
-.marquee:hover .marquee__track,
-.marquee:focus-within .marquee__track { animation-play-state: paused; }
-@keyframes marquee {
-  to { transform: translate3d(calc(-50% - .5rem), 0, 0); }
+.bento-marquee:hover .bento-track,
+.bento-marquee:focus-within .bento-track { animation-play-state: paused; }
+@keyframes bento-slide {
+  to { transform: translate3d(calc(-50% - var(--g) / 2), 0, 0); }
 }
 
-.marquee__card {
+.bento-tile {
   position: relative;
   display: block;
-  flex: none;
-  height: clamp(14rem, 34vh, 22rem);
   border-radius: 4px;
   overflow: hidden;
   background: var(--paper-deep);
   box-shadow: 0 4px 14px -6px rgba(38, 37, 31, .35);
   transition: transform .25s ease, box-shadow .25s ease;
 }
-.marquee__card img {
+.bento-tile img {
+  width: 100%;
   height: 100%;
-  width: auto;
+  object-fit: cover;
+  object-position: 50% 0;
   display: block;
+  transition: transform .3s ease;
 }
-.marquee__card:hover, .marquee__card:focus-visible {
+.bento-tile.is-tall img { object-position: 50% 50%; }
+.bento-tile:hover img { transform: scale(1.03); }
+.bento-tile:hover, .bento-tile:focus-visible {
   transform: translateY(-4px);
   box-shadow: 0 22px 40px -18px rgba(38, 37, 31, .55);
 }
-.marquee__card .card-title {
+.bento-tile .card-title {
   position: absolute;
   inset: auto 0 0 0;
-  padding: 2.2rem .9rem .8rem;
+  padding: 2rem .8rem .7rem;
   font-family: var(--sans);
-  font-size: .78rem;
+  font-size: .74rem;
   font-weight: 600;
-  line-height: 1.35;
+  line-height: 1.3;
   color: #fff;
   background: linear-gradient(to top, rgba(22, 40, 32, .85), rgba(22, 40, 32, 0));
   opacity: 0;
   transition: opacity .18s ease;
 }
-.marquee__card:hover .card-title, .marquee__card:focus-visible .card-title { opacity: 1; }
+.bento-tile.is-small .card-title { font-size: .66rem; padding: 1.4rem .6rem .5rem; }
+.bento-tile:hover .card-title, .bento-tile:focus-visible .card-title { opacity: 1; }
 
 .marquee-more { margin: 2rem 0 0; text-align: center; }
 
 @media (hover: none) {
-  .marquee__card .card-title { opacity: 1; padding-top: 1.4rem; }
+  .bento-tile .card-title { opacity: 1; padding-top: 1.2rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .marquee { overflow-x: auto; mask-image: none; -webkit-mask-image: none; scrollbar-width: thin; }
-  .marquee__track { animation: none; }
-  .marquee__track > .marquee__copy { display: none; }
+  .bento-marquee { overflow-x: auto; mask-image: none; -webkit-mask-image: none; scrollbar-width: thin; }
+  .bento-track { animation: none; grid-template-columns: repeat(var(--cols), var(--u)); }
+  .bento-copy { display: none !important; }
 }
 
 /* --- about band ------------------------------------------------------------ */
