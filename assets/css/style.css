@@ -1293,67 +1293,56 @@ body.home-scrolly .section.tinted {
 
 /* --- themes -------------------------------------------------------------- */
 
-/* --- full-width bento with carousel cards ---------------------------------
-   Each card holds two stacked layers. The incoming slide is staged on the
-   bottom layer at full opacity; the top layer then fades out over it, so
-   the background never shines through mid-transition. */
+/* --- cover marquee: every cover, sliding past slowly ----------------------
+   Two copies of the row in one track; the track moves exactly one row-width,
+   so the loop is seamless. Pauses under the pointer or keyboard focus. With
+   reduced motion it is a plain row you scroll sideways yourself. */
 
-.bento {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: .9rem;
-  padding-inline: .9rem;
-  height: max(38rem, calc(100vh - 6rem));
+.marquee {
+  position: relative;
+  overflow: hidden;
+  padding-block: .5rem;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }
-body.home-scrolly .bento {
-  height: max(38rem, calc(100vh - 6rem));
-  min-height: 0;
+.marquee__track {
+  display: flex;
+  gap: 1rem;
+  width: max-content;
+  animation: marquee var(--marquee-s, 120s) linear infinite;
 }
-.bento-card:nth-child(1) { grid-column: 1 / 4; grid-row: 1 / 3; }
-.bento-card:nth-child(2) { grid-column: 4 / 6; grid-row: 1 / 2; }
-.bento-card:nth-child(3) { grid-column: 6 / 7; grid-row: 1 / 2; }
-.bento-card:nth-child(4) { grid-column: 4 / 5; grid-row: 2 / 3; }
-.bento-card:nth-child(5) { grid-column: 5 / 7; grid-row: 2 / 3; }
+.marquee:hover .marquee__track,
+.marquee:focus-within .marquee__track { animation-play-state: paused; }
+@keyframes marquee {
+  to { transform: translate3d(calc(-50% - .5rem), 0, 0); }
+}
 
-.bento-card {
+.marquee__card {
   position: relative;
   display: block;
+  flex: none;
+  height: clamp(14rem, 34vh, 22rem);
+  border-radius: 4px;
   overflow: hidden;
-  border-radius: 8px;
+  background: var(--paper-deep);
   box-shadow: 0 4px 14px -6px rgba(38, 37, 31, .35);
-  transition: box-shadow .2s ease;
+  transition: transform .25s ease, box-shadow .25s ease;
 }
-.bento-card:hover, .bento-card:focus-visible {
+.marquee__card img {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+.marquee__card:hover, .marquee__card:focus-visible {
+  transform: translateY(-4px);
   box-shadow: 0 22px 40px -18px rgba(38, 37, 31, .55);
 }
-
-.bento-card .layer {
-  position: absolute;
-  inset: 0;
-}
-.bento-card .layer img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 18%;
-  transition: transform .3s ease;
-}
-.bento-card:hover .layer img { transform: scale(1.03); }
-.bento-card .layer.top {
-  z-index: 2;
-  transition: opacity .9s ease;
-}
-.bento-card .layer.top.fading { opacity: 0; }
-.bento-card .layer.top.notransition { transition: none; }
-
-.bento-card .card-title {
+.marquee__card .card-title {
   position: absolute;
   inset: auto 0 0 0;
-  z-index: 3;
-  padding: 2.2rem 1.1rem .9rem;
+  padding: 2.2rem .9rem .8rem;
   font-family: var(--sans);
-  font-size: .82rem;
+  font-size: .78rem;
   font-weight: 600;
   line-height: 1.35;
   color: #fff;
@@ -1361,32 +1350,17 @@ body.home-scrolly .bento {
   opacity: 0;
   transition: opacity .18s ease;
 }
-.bento-card:hover .card-title, .bento-card:focus-visible .card-title { opacity: 1; }
+.marquee__card:hover .card-title, .marquee__card:focus-visible .card-title { opacity: 1; }
 
-.bento-more { margin: 2rem 0 0; text-align: center; }
-
-@media (max-width: 56rem) {
-  .bento {
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: none;
-    grid-auto-rows: 32vh;
-    height: auto;
-  }
-  body.home-scrolly .bento {
-    height: auto;
-    min-height: 0;
-  }
-  .bento-card:nth-child(1) { grid-column: 1 / 3; grid-row: auto / span 2; }
-  .bento-card:nth-child(2), .bento-card:nth-child(3),
-  .bento-card:nth-child(4), .bento-card:nth-child(5) { grid-column: auto; grid-row: auto; }
-}
+.marquee-more { margin: 2rem 0 0; text-align: center; }
 
 @media (hover: none) {
-  .bento-card .card-title { opacity: 1; padding-top: 1.4rem; }
+  .marquee__card .card-title { opacity: 1; padding-top: 1.4rem; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .bento-card .layer.top { transition: none; }
+  .marquee { overflow-x: auto; mask-image: none; -webkit-mask-image: none; scrollbar-width: thin; }
+  .marquee__track { animation: none; }
+  .marquee__track > .marquee__copy { display: none; }
 }
 
 /* --- about band ------------------------------------------------------------ */

@@ -136,3 +136,33 @@ ${items.map(card).join('\n')}
 `;
 writeFileSync(join(ROOT, 'publicaties', 'index.html'), html);
 console.log(`publicaties/index.html: ${items.length} publicaties, ${first}–${last}`);
+
+// ── the cover marquee on the homepage: every publication with a real cover, newest first,
+//    the row twice over so the CSS loop is seamless ─────────────────────────────────────
+// portrait covers only (the landscape factsheets are single A4 pages, not covers), one per title
+const withCover = items
+  .filter((p) => p.file && meta[p.file] && !meta[p.file].cover.plain && meta[p.file].cover.h > meta[p.file].cover.w * 1.05)
+  .filter((p, i, all) => all.findIndex((q) => q.title.replace(/ factsheet.*$/i, '') === p.title.replace(/ factsheet.*$/i, '')) === i);
+const marqueeCard = (p, copy) => {
+  const m = meta[p.file];
+  return `      <a class="marquee__card" href="publicaties/pdf/${encodeURIComponent(p.file)}"${copy ? ' tabindex="-1" aria-hidden="true"' : ''}>
+        <img src="publicaties/covers/${encodeURIComponent(p.file.replace(/\.pdf$/i, ''))}.webp" width="${m.cover.w}" height="${m.cover.h}" alt="${copy ? '' : esc(p.title)}" loading="lazy" decoding="async">
+        <span class="card-title">${esc(p.title)}</span>
+      </a>`;
+};
+const marquee = `    <!-- marquee:start — GEGENEREERD door scripts/build-publicaties.mjs -->
+    <div class="marquee" data-site-snap data-site-snap-free aria-label="Omslagen van publicaties">
+      <div class="marquee__track" style="--marquee-s:${Math.round(withCover.length * 6)}s">
+${withCover.map((p) => marqueeCard(p, false)).join('\n')}
+      <span class="marquee__copy" style="display:contents">
+${withCover.map((p) => marqueeCard(p, true)).join('\n')}
+      </span>
+      </div>
+    </div>
+    <!-- marquee:end -->`;
+const homePath = join(ROOT, 'index.html');
+const home = readFileSync(homePath, 'utf8');
+const re = /    <!-- marquee:start[\s\S]*?<!-- marquee:end -->/;
+if (!re.test(home)) { console.error('marquee markers not found in index.html'); process.exit(1); }
+writeFileSync(homePath, home.replace(re, marquee));
+console.log(`index.html: marquee met ${withCover.length} omslagen`);

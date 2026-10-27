@@ -19,9 +19,9 @@ publicaties/covers/          GEGENEREERD: de voorkant van elke pdf als webp
 publicaties/pdf-meta.json    GEGENEREERD: paginatelling en bestandsgrootte per pdf
 monitor-sample/              GESYNCHRONISEERD: snapshot van de Monitor-deck (zie VERSION)
 assets/css/style.css         Eén stylesheet; tokens bovenaan, het Monitor-blok apart
-assets/js/site.js            Scrolly, bento-carrousel, e-mail-onthulling, publicatiefilter
+assets/js/site.js            Scrolly, e-mail-onthulling, publicatiefilter
 assets/fonts/                Montserrat (woff2, gesubset, zelf gehost)
-assets/img/                  Portret, lepelaars, bento-omslagen, favicon
+assets/img/                  Portret, lepelaars, favicon
 scripts/                     De drie generatoren (hieronder)
 _reference/                  Screenshots van de oorspronkelijke WordPress-site
 ```
@@ -52,7 +52,8 @@ python3 -m http.server 8000
 3. `python3 scripts/make-covers.py` — rendert de voorkant en legt paginatelling en grootte
    vast (vereist poppler en Pillow). Heeft de pdf geen echte kaft, dan tekent de pagina zelf een
    typografische cover.
-4. `node scripts/build-publicaties.mjs` — schrijft `publicaties/index.html`.
+4. `node scripts/build-publicaties.mjs` — schrijft `publicaties/index.html` en de omslagcarrousel
+   op de homepage (tussen de `marquee`-markers in `index.html`).
 5. Commit pdf, json, cover, meta en de gegenereerde pagina.
 
 ## De Monitor bijwerken
