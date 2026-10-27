@@ -39,13 +39,12 @@
   --green-dark: #16382b;
   --green-tint: #e5eae2;
   --line: #ddd6c6;
-  --red: #b73d33;
-  --red-dark: #96322a;
+  /* the accent is the green itself: yellow, green and paper are the whole palette */
+  --red: #1f4d3a;
+  --red-dark: #16382b;
   --yellow: #f6cd27;
   --yellow-soft: #f9d95c;
   --blue: #3f6d9e;
-  --pink: #bd3d76;
-  --orange: #d97b32;
   --gold: #d9a520;
   --serif: 'Charter', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, 'Times New Roman', serif;
   --sans: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -217,7 +216,7 @@ body.home-scrolly .hero-grid {
   margin: 0 0 1.1rem;
 }
 .kicker .sep { color: var(--ink-soft); font-weight: 400; padding-inline: .35em; }
-.hero .kicker { color: var(--red-dark); }
+.hero .kicker { color: var(--green-dark); }
 .hero .kicker .sep { color: rgba(38, 37, 31, .55); }
 
 .hero h1 {
@@ -1406,10 +1405,10 @@ body.home-scrolly .about {
   gap: clamp(2rem, 6vw, 5rem);
   align-items: center;
 }
-.about .kicker { color: #d8a49e; }
+.about .kicker { color: var(--yellow); }
 .about h2 { color: #fdfbf5; font-size: clamp(1.7rem, 3.4vw, 2.4rem); }
 .about p { color: #d9dfd2; margin: 0 0 1.1em; }
-.about a { color: #f2c9c2; }
+.about a { color: var(--yellow-soft); }
 .about a:hover { color: #fff; }
 
 .about-photo {
@@ -1442,7 +1441,7 @@ body.home-scrolly .contact {
 }
 .contact .wrap { position: relative; }
 .contact .section-head { margin-inline: auto; }
-.contact .kicker { color: var(--red-dark); }
+.contact .kicker { color: var(--green-dark); }
 .contact .section-head .intro { color: rgba(38, 37, 31, .75); }
 .contact .email-slot { min-height: 3.4rem; display: grid; place-items: center; }
 .contact .email-slot a {

@@ -66,7 +66,7 @@ const html = `<!DOCTYPE html>
   <meta name="description" content="Publicaties van Wilma Henderikse, ${first}–${last}: monitors, rapporten, artikelen en handreikingen over gender, diversiteit, leeftijd en de combinatie van werk en zorg.">
   <link rel="canonical" href="https://wilmahenderikse.nl/publicaties/">
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
-  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/style.css?v=c272-3">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="nl_NL">
   <meta property="og:title" content="Publicaties | Wilma Henderikse">
