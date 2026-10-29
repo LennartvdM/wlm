@@ -66,7 +66,7 @@ const html = `<!DOCTYPE html>
   <meta name="description" content="Publicaties van Wilma Henderikse, ${first}–${last}: monitors, rapporten, artikelen en handreikingen over gender, diversiteit, leeftijd en de combinatie van werk en zorg.">
   <link rel="canonical" href="https://wilmahenderikse.nl/publicaties/">
   <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg">
-  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/style.css?v=c272-3">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="nl_NL">
   <meta property="og:title" content="Publicaties | Wilma Henderikse">
@@ -76,11 +76,10 @@ const html = `<!DOCTYPE html>
 
 <header class="site-header">
   <div class="wrap">
-    <a class="wordmark" href="../"><span class="wordmark__mark" aria-hidden="true"></span>Wilma Henderikse</a>
+    <a class="wordmark" href="../">Wilma Henderikse<span class="dot">.</span></a>
     <nav class="site-nav" aria-label="Hoofdmenu">
       <a href="../#werk">Mijn werk</a>
       <a href="./" aria-current="page">Publicaties</a>
-      <a href="../#laatste-project">Monitor 2025</a>
       <a href="../#over">Over Wilma</a>
       <a href="../#contact">Contact</a>
     </nav>
@@ -90,12 +89,9 @@ const html = `<!DOCTYPE html>
 <main>
 
   <div class="page-head">
-    <div class="wrap section__grid">
-      <p class="section__label">Publicaties</p>
-      <div class="section__body">
-        <h1 class="page-title">Publicaties</h1>
-        <p class="page-lede">Monitors, rapporten, artikelen en handreikingen over gender, diversiteit, leeftijd en de combinatie van werk en zorg, ${first}–${last}. Alle documenten zijn als PDF te openen en te downloaden.</p>
-      </div>
+    <div class="wrap">
+      <h1>Publicaties</h1>
+      <p class="intro">Monitors, rapporten, artikelen en handreikingen over gender, diversiteit, leeftijd en de combinatie van werk en zorg, ${first}–${last}. Alle documenten zijn als PDF te openen en te downloaden.</p>
     </div>
   </div>
 
@@ -128,8 +124,8 @@ ${items.map(card).join('\n')}
 
 <footer class="site-footer">
   <div class="wrap">
-    <span class="site-footer__name">© <span id="jaar">${new Date().getFullYear()}</span> Wilma Henderikse</span>
-    <span class="site-footer__links"><a href="../#laatste-project">Monitor Talent naar de Top 2025</a> · <a href="https://www.researchgate.net/profile/Wilma_Henderikse" rel="noopener">ResearchGate</a></span>
+    <span>© <span id="jaar">${new Date().getFullYear()}</span> Wilma Henderikse</span>
+    <span><a href="../">Home</a> · <a href="https://www.researchgate.net/profile/Wilma_Henderikse" rel="noopener">ResearchGate</a></span>
   </div>
 </footer>
 
@@ -140,3 +136,69 @@ ${items.map(card).join('\n')}
 `;
 writeFileSync(join(ROOT, 'publicaties', 'index.html'), html);
 console.log(`publicaties/index.html: ${items.length} publicaties, ${first}–${last}`);
+
+// ── the cover bento on the homepage: every portrait cover (one per title) as tiles of
+//    varying size in a two-row strip that slides past. Sizes are drawn by a seeded PRNG,
+//    so the pattern is random-looking but identical on every build and needs no JS.
+//    The strip is packed twice over, the second copy offset, so the CSS loop is seamless. ──
+const sameCover = (a, b) => {
+  const norm = (t) => t.toLowerCase().replace(/\bfactsheet\b,?/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+  return norm(a) === norm(b);
+};
+const withCover = items
+  .filter((p) => p.file && meta[p.file] && !meta[p.file].cover.plain && meta[p.file].cover.h > meta[p.file].cover.w * 1.05)
+  .filter((p, i, all) => all.findIndex((q) => sameCover(q.title, p.title)) === i);
+const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const rand = rng(withCover.length * 7919 + 11);
+const SIZES = [['tall', 1, 2, .38], ['big', 2, 2, .17], ['small', 1, 1, .25], ['wide', 2, 1, .2]];
+const draw = () => { let r = rand(); for (const s of SIZES) { r -= s[3]; if (r <= 0) return s; } return SIZES[0]; };
+// pack into two rows; cols[r] = next free column of row r
+const cols = [0, 0];
+const tiles = [];
+let prevShape = null;
+withCover.forEach((p, n) => {
+  let [name, w, h] = draw();
+  if (prevShape === name && name !== 'small') [name, w, h] = SIZES[2];   // never two of the same big shape in a row
+  if (n === 0) [name, w, h] = SIZES[1];                              // the newest opens the strip, big
+  let col, row;
+  // a two-row tile needs both rows level; if they are not, this cover fills the shorter row
+  // instead (as a small or wide tile), so the strip never has a hole
+  if (h === 2 && cols[0] !== cols[1]) {
+    w = Math.min(2, Math.abs(cols[0] - cols[1])); h = 1; name = w === 2 ? 'wide' : 'small';
+  }
+  if (h === 2) { col = cols[0]; row = 0; cols[0] = cols[1] = col + w; }
+  else { row = cols[0] <= cols[1] ? 0 : 1; col = cols[row]; cols[row] += w; }
+  tiles.push({ p, name, col, row, w, h });
+  prevShape = name;
+});
+// even out the two rows at the end, so the loop closes without a hole
+while (cols[0] !== cols[1]) {
+  const row = cols[0] < cols[1] ? 0 : 1, w = Math.min(2, Math.abs(cols[0] - cols[1]));
+  const p = withCover[tiles.length % withCover.length];
+  tiles.push({ p, name: w === 2 ? 'wide' : 'small', col: cols[row], row, w, h: 1 });
+  cols[row] += w;
+}
+const totalCols = cols[0];
+const tile = (t, copy) => {
+  const m = meta[t.p.file];
+  return `      <a class="bento-tile is-${t.name}" style="grid-area:${t.row + 1} / ${t.col + 1 + (copy ? totalCols : 0)} / span ${t.h} / span ${t.w}" href="publicaties/pdf/${encodeURIComponent(t.p.file)}"${copy ? ' tabindex="-1" aria-hidden="true"' : ''}>
+        <img src="publicaties/covers/${encodeURIComponent(t.p.file.replace(/\.pdf$/i, ''))}.webp" width="${m.cover.w}" height="${m.cover.h}" alt="${copy ? '' : esc(t.p.title)}" loading="lazy" decoding="async">
+        <span class="card-title">${esc(t.p.title)}</span>
+      </a>`;
+};
+const marquee = `    <!-- marquee:start — GEGENEREERD door scripts/build-publicaties.mjs -->
+    <div class="bento-marquee" data-site-snap data-site-snap-free aria-label="Omslagen van publicaties">
+      <div class="bento-track" style="--cols:${totalCols};--marquee-s:${Math.round(totalCols * 4.5)}s">
+${tiles.map((t) => tile(t, false)).join('\n')}
+      <span class="bento-copy" style="display:contents">
+${tiles.map((t) => tile(t, true)).join('\n')}
+      </span>
+      </div>
+    </div>
+    <!-- marquee:end -->`;
+const homePath = join(ROOT, 'index.html');
+const home = readFileSync(homePath, 'utf8');
+const re = /    <!-- marquee:start[\s\S]*?<!-- marquee:end -->/;
+if (!re.test(home)) { console.error('marquee markers not found in index.html'); process.exit(1); }
+writeFileSync(homePath, home.replace(re, marquee));
+console.log(`index.html: bento-carrousel met ${withCover.length} omslagen in ${totalCols} kolommen`);

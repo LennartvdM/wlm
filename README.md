@@ -19,9 +19,9 @@ publicaties/covers/          GEGENEREERD: de voorkant van elke pdf als webp
 publicaties/pdf-meta.json    GEGENEREERD: paginatelling en bestandsgrootte per pdf
 monitor-sample/              GESYNCHRONISEERD: snapshot van de Monitor-deck (zie VERSION)
 assets/css/style.css         Eén stylesheet; tokens bovenaan, het Monitor-blok apart
-assets/js/site.js            Scrolly, bento-carrousel, e-mail-onthulling, publicatiefilter
-assets/fonts/                Archivo (variabel, woff2, latin + latin-ext, zelf gehost)
-assets/img/                  Portret, lepelaars, bento-omslagen, favicon
+assets/js/site.js            Scrolly, e-mail-onthulling, publicatiefilter
+assets/fonts/                Montserrat (woff2, gesubset, zelf gehost)
+assets/img/                  Portret, lepelaars, favicon
 scripts/                     De drie generatoren (hieronder)
 _reference/                  Screenshots van de oorspronkelijke WordPress-site
 ```
@@ -31,9 +31,9 @@ _reference/                  Screenshots van de oorspronkelijke WordPress-site
 - **De teksten zijn van Wilma zelf.** Rollen, de zin over haar werk, de bio, het citaat en de
   publicatietitels staan letterlijk zoals op de oorspronkelijke site. De enige toegevoegde
   tekst zijn labels ("Mijn werk", "Contact") en de inleiding op de publicatiepagina.
-- **Eén lettertype, kleur in tonen.** Archivo in gematigde maten en gewichten. Het blad is
-  lichtteal; secties zijn lagen van teal en geel met kleine stappen ertussen; twee bijna-zwarte
-  teal banden (citaat, footer) en geel als klein merkteken (het streepje boven koppen).
+- **Palet en opzet van de oorspronkelijke site.** Warm geel (hero, contact), diep groen (over
+  Wilma), warm papier; portret tegen de rand; gecentreerd citaat. Montserrat, zelf gehost.
+  Geen decoratie die niets doet: geen cirkels, geen scheve foto's; één typografische schaal.
 - **Geen externe requests.** Lettertype zelf gehost, geen Google Fonts, geen analytics.
 - **E-mailadres niet in de DOM**: pas na een klik samengesteld uit tekencodes.
 - **Zonder JavaScript blijft alles bruikbaar**: de publicatielijst staat er compleet, het
@@ -52,7 +52,8 @@ python3 -m http.server 8000
 3. `python3 scripts/make-covers.py` — rendert de voorkant en legt paginatelling en grootte
    vast (vereist poppler en Pillow). Heeft de pdf geen echte kaft, dan tekent de pagina zelf een
    typografische cover.
-4. `node scripts/build-publicaties.mjs` — schrijft `publicaties/index.html`.
+4. `node scripts/build-publicaties.mjs` — schrijft `publicaties/index.html` en de bento-carrousel
+   op de homepage (tussen de `marquee`-markers in `index.html`).
 5. Commit pdf, json, cover, meta en de gegenereerde pagina.
 
 ## De Monitor bijwerken
