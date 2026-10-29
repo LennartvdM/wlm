@@ -442,6 +442,9 @@
     var monitorStage = monitor.querySelector('.monitor-stage');
     var photoLayer = monitor.querySelector('[data-monitor-photo-layer]');
     var releaseLink = monitor.querySelector('.monitor-release a');
+    var monitorSampleEl = monitor.querySelector('.monitor-sample');
+    var monitorFrostEl = monitor.querySelector('.monitor-frost');
+    var monitorReleaseEl = monitor.querySelector('.monitor-release');
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var monitorTicking = false;
     var monitorPhotoMaskQueued = false;
@@ -475,6 +478,15 @@
     ];
 
     var clamp01 = function (n) { return Math.max(0, Math.min(1, n)); };
+    /* CSS-variabelen alleen schrijven als de waarde echt verandert: elke schrijfactie
+       maakt de stijlen van de hele subtree ongeldig, en de meeste frames dragen
+       dezelfde getallen. */
+    var setVar = function (el, name, value) {
+      var cache = el.__vars || (el.__vars = {});
+      if (cache[name] === value) { return; }
+      cache[name] = value;
+      el.style.setProperty(name, value);
+    };
     var clampValue = function (min, n, max) { return Math.max(min, Math.min(max, n)); };
     var smoothstep = function (a, b, n) {
       var t = clamp01((n - a) / (b - a));
@@ -548,9 +560,9 @@
 
       var index = Math.max(0, acts.indexOf(act));
       var palette = palettes[Math.min(index, palettes.length - 1)] || palettes[0];
-      monitor.style.setProperty('--void-a', palette[0]);
-      monitor.style.setProperty('--void-b', palette[1]);
-      monitor.style.setProperty('--void-c', palette[2]);
+      setVar(monitor, '--void-a', palette[0]);
+      setVar(monitor, '--void-b', palette[1]);
+      setVar(monitor, '--void-c', palette[2]);
 
       if (p02 && p02.contains(act)) {
         var sceneName = act.getAttribute('data-scene');
@@ -609,16 +621,13 @@
       }
       var sampleY = isReleaseTail ? holdReleaseScrollTop() : sampleScroll.scrollTop;
       var p = clamp01(sampleY / max);
-      sampleScroll.classList.toggle('is-release-tail', isReleaseTail);
-      sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
       var frost = smoothstep(.08, .94, releaseP);
       var release = smoothstep(.28, .98, releaseP);
-      var photoB = smoothstep(.35, .58, p) * .34;
-      var photoC = smoothstep(.55, .78, p) * .28;
+
+      /* eerst alle metingen (één layout per frame), dan pas schrijven */
       var center = sampleScroll.getBoundingClientRect().top + sampleScroll.clientHeight * .44;
       var best = null;
       var bestDistance = Infinity;
-
       if (!isReleaseTail) {
         acts.forEach(function (act) {
           var rect = act.getBoundingClientRect();
@@ -628,17 +637,29 @@
             bestDistance = distance;
           }
         });
-        activateAct(best || acts[0]);
+        snapCirkelContent();
       }
 
-      monitor.style.setProperty('--frost', frost.toFixed(3));
-      monitor.style.setProperty('--release', release.toFixed(3));
-      monitor.style.setProperty('--photo-a', (.28 - smoothstep(.52, .82, p) * .08).toFixed(3));
-      monitor.style.setProperty('--photo-b', photoB.toFixed(3));
-      monitor.style.setProperty('--photo-c', photoC.toFixed(3));
+      sampleScroll.classList.toggle('is-release-tail', isReleaseTail);
+      setVar(sampleScroll, '--monitor-freeze-y', '0px');
+      if (!isReleaseTail) { activateAct(best || acts[0]); }
+      /* De per-frame waarden gaan rechtstreeks naar de drie elementen die ze
+         gebruiken, niet als geërfde CSS-variabele op het hele panorama: een
+         variabele op de wortel dwingt elke frame een herberekening van de
+         complete sample-subtree af. */
+      var frostText = frost.toFixed(3);
+      var releaseText = release.toFixed(3);
+      if (monitorFrostEl) { setVar(monitorFrostEl, 'opacity', frostText); }
+      if (monitorSampleEl) {
+        setVar(monitorSampleEl, 'filter', frost < .002 ? 'none'
+          : 'blur(' + (frost * 2.2).toFixed(2) + 'px) saturate(' + (1 - frost * .25).toFixed(3) + ') brightness(' + (1 + frost * .05).toFixed(3) + ')');
+      }
+      if (monitorReleaseEl) {
+        setVar(monitorReleaseEl, 'opacity', releaseText);
+        setVar(monitorReleaseEl, 'transform', 'translateY(' + ((1 - release) * .65).toFixed(3) + 'rem)');
+      }
       monitor.classList.toggle('is-released', release > .45);
       document.body.classList.toggle('monitor-release-open', release > .04);
-      if (!isReleaseTail) { snapCirkelContent(); }
       schedulePhotoMasks();
     };
 
@@ -716,7 +737,7 @@
       samplePager.frostScrollTop = null;
       resumeMonitorPhotoDrift();
       sampleScroll.classList.remove('is-release-tail');
-      sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
+      setVar(sampleScroll, '--monitor-freeze-y', '0px');
     };
 
     var snapCirkelContent = function () {
@@ -1001,62 +1022,71 @@
       mask.appendChild(part);
     };
 
-    var updateMonitorMaskFor = function (slot) {
-      if (!slot || !slot.host || !slot.mask) { return; }
-      var hostRect = slot.host.getBoundingClientRect();
-      slot.mask.innerHTML = '';
-      if (hostRect.width <= 0 || hostRect.height <= 0) { return; }
+    var monitorTextGroups = [];
+    var monitorHeads = [];
+    var maskPads = function () {
       var stageWidth = monitorStage ? monitorStage.clientWidth : window.innerWidth;
       var stageHeight = monitorStage ? monitorStage.clientHeight : window.innerHeight;
-      var bodyPad = {
-        t: Math.max(42, Math.round(stageHeight * .12)),
-        r: Math.max(48, Math.round(stageHeight * .12)),
-        b: Math.max(42, Math.round(stageHeight * .12)),
-        l: Math.max(48, Math.round(stageHeight * .12))
+      return {
+        body: {
+          t: Math.max(42, Math.round(stageHeight * .12)),
+          r: Math.max(48, Math.round(stageHeight * .12)),
+          b: Math.max(42, Math.round(stageHeight * .12)),
+          l: Math.max(48, Math.round(stageHeight * .12))
+        },
+        head: {
+          t: Math.max(92, Math.round(stageHeight * .26)),
+          r: Math.max(190, Math.round(stageWidth * .34)),
+          b: Math.max(24, Math.round(stageHeight * .045)),
+          l: Math.max(72, Math.round(stageWidth * .08))
+        }
       };
-      var headPad = {
-        t: Math.max(92, Math.round(stageHeight * .26)),
-        r: Math.max(190, Math.round(stageWidth * .34)),
-        b: Math.max(24, Math.round(stageHeight * .045)),
-        l: Math.max(72, Math.round(stageWidth * .08))
-      };
-      Array.prototype.slice.call(sampleScroll.querySelectorAll('.pd-grp')).forEach(function (el) {
-        var rect = el.getBoundingClientRect();
-        if (!visibleMonitorRect(rect)) { return; }
-        addMonitorMask(slot.mask, hostRect, rect, bodyPad, 64, '');
-      });
-      if (!slot.host.classList.contains('pd-tr')) {
-        Array.prototype.slice.call(sampleScroll.querySelectorAll('.phead h2')).forEach(function (el) {
-          var rect = el.getBoundingClientRect();
-          if (!visibleMonitorRect(rect)) { return; }
-          addMonitorMask(slot.mask, hostRect, rect, headPad, 56, 'pd-mask-head');
-        });
-      }
     };
 
-    var updateMonitorTextContrast = function () {
-      var photoRects = monitorPhotoSlots.map(function (slot) {
-        if (!slot || !slot.host) { return null; }
-        var style = getComputedStyle(slot.host);
-        var opacity = parseFloat(style.opacity || '0');
-        if ((!slot.host.classList.contains('in') && opacity <= .08) || style.display === 'none') { return null; }
-        var rect = slot.host.getBoundingClientRect();
-        return visibleMonitorRect(rect) ? rect : null;
-      }).filter(Boolean);
-      var targets = Array.prototype.slice.call(sampleScroll.querySelectorAll('.pd-grp, .phead h2'));
-      targets.forEach(function (el) {
-        var rect = el.getBoundingClientRect();
-        var hit = visibleMonitorRect(rect) && photoRects.some(function (photoRect) {
-          return monitorRectsOverlap(rect, photoRect);
-        });
-        el.classList.toggle('pd-over-photo', !!hit);
-      });
-    };
-
+    /* Fotomaskers en tekstcontrast in één pas: EERST alle metingen (rects van de
+       foto's, de tekstgroepen en de koppen — één layout), DAARNA alle
+       schrijfacties. Lezen en schrijven door elkaar kostte per frame meerdere
+       geforceerde layouts; dat was het haperen bij het scrollen langs het stage. */
     var updateMonitorPhotoMasks = function () {
       monitorPhotoMaskQueued = false;
-      monitorPhotoSlots.forEach(updateMonitorMaskFor);
-      updateMonitorTextContrast();
+      if (!sampleScroll) { return; }
+      var pads = maskPads();
+      var groups = monitorTextGroups.map(function (el) { return { el: el, rect: el.getBoundingClientRect() }; });
+      var heads = monitorHeads.map(function (el) { return { el: el, rect: el.getBoundingClientRect() }; });
+      var slots = monitorPhotoSlots.map(function (slot) {
+        if (!slot || !slot.host || !slot.mask) { return null; }
+        var style = getComputedStyle(slot.host);
+        var opacity = parseFloat(style.opacity || '0');
+        var rect = slot.host.getBoundingClientRect();
+        var shown = !((!slot.host.classList.contains('in') && opacity <= .08) || style.display === 'none');
+        return { slot: slot, rect: rect, shown: shown, isTopRight: slot.host.classList.contains('pd-tr') };
+      }).filter(Boolean);
+
+      slots.forEach(function (entry) {
+        var mask = entry.slot.mask;
+        var hostRect = entry.rect;
+        var parts = document.createDocumentFragment();
+        if (hostRect.width > 0 && hostRect.height > 0) {
+          groups.forEach(function (g) {
+            if (visibleMonitorRect(g.rect)) { addMonitorMask(parts, hostRect, g.rect, pads.body, 64, ''); }
+          });
+          if (!entry.isTopRight) {
+            heads.forEach(function (h) {
+              if (visibleMonitorRect(h.rect)) { addMonitorMask(parts, hostRect, h.rect, pads.head, 56, 'pd-mask-head'); }
+            });
+          }
+        }
+        mask.innerHTML = '';
+        mask.appendChild(parts);
+      });
+
+      var photoRects = slots.filter(function (entry) { return entry.shown && visibleMonitorRect(entry.rect); }).map(function (entry) { return entry.rect; });
+      groups.concat(heads).forEach(function (t) {
+        var hit = visibleMonitorRect(t.rect) && photoRects.some(function (photoRect) {
+          return monitorRectsOverlap(t.rect, photoRect);
+        });
+        t.el.classList.toggle('pd-over-photo', !!hit);
+      });
     };
 
     var schedulePhotoMasks = function () {
@@ -1449,7 +1479,7 @@
       var release = samplePager.release;
       var frostScrollTop = samplePager.frostScrollTop;
       sampleScroll.classList.remove('is-release-tail');
-      sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
+      setVar(sampleScroll, '--monitor-freeze-y', '0px');
       var max = Math.max(0, sampleScroll.scrollHeight - sampleScroll.clientHeight);
       samplePager.max = max;
       if (wasReleaseTail && frostScrollTop != null) {
@@ -1468,7 +1498,7 @@
         samplePager.frostScrollTop = frostScrollTop != null ? frostScrollTop : sampleScroll.scrollTop;
         sampleScroll.scrollTop = samplePager.frostScrollTop;
         sampleScroll.classList.add('is-release-tail');
-        sampleScroll.style.setProperty('--monitor-freeze-y', '0px');
+        setVar(sampleScroll, '--monitor-freeze-y', '0px');
       }
     };
 
@@ -1670,6 +1700,8 @@
       sampleScroll.appendChild(p02);
       sampleScroll.appendChild(p05);
       wrapMonitorTextGroups(sampleScroll);
+      monitorTextGroups = Array.prototype.slice.call(sampleScroll.querySelectorAll('.pd-grp'));
+      monitorHeads = Array.prototype.slice.call(sampleScroll.querySelectorAll('.phead h2'));
       var end = document.createElement('div');
       end.className = 'monitor-end-stop';
       end.setAttribute('aria-hidden', 'true');
