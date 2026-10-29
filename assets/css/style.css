@@ -58,8 +58,7 @@ html {
   scroll-behavior: smooth;
 }
 
-html.home-scrolly-root,
-html:has(body.home-scrolly) {
+html.home-scrolly-root {
   scroll-padding-block: calc(var(--site-header-h) + 1rem) 12svh;
 }
 
@@ -309,9 +308,6 @@ body.home-scrolly [data-site-snap] {
 .monitor-panorama {
   --frost: 0;
   --release: 0;
-  --photo-a: .28;
-  --photo-b: 0;
-  --photo-c: 0;
   --void-a: #e9eef7;
   --void-b: #ede4f3;
   --void-c: #f7f9fd;
@@ -551,7 +547,6 @@ body.home-scrolly [data-site-snap] {
   opacity: var(--release);
   pointer-events: none;
   transform: translateY(calc((1 - var(--release)) * .65rem));
-  transition: transform .18s ease;
 }
 .monitor-panorama.is-released .monitor-release { pointer-events: none; }
 .monitor-panorama.is-released .monitor-release a { pointer-events: auto; }
@@ -685,8 +680,10 @@ body.home-scrolly [data-site-snap] {
   font-family: var(--monitor-body);
   font-size: 1rem;
   line-height: 1.45;
+  /* filter, en de opacity van .monitor-frost / .monitor-release, worden per
+     frame door site.js inline gezet (geen transition: die zou elke frame
+     opnieuw starten) */
   filter: blur(calc(var(--frost) * 2.2px)) saturate(calc(1 - var(--frost) * .25)) brightness(calc(1 + var(--frost) * .05));
-  transition: filter .25s ease;
 }
 .monitor-sample .phead h2,
 .monitor-sample .pd-grp,
